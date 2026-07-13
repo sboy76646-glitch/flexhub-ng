@@ -1,9 +1,17 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem("flexhub-cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("flexhub-cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   function addToCart(product) {
     const existing = cartItems.find((item) => item.id === product.id);
@@ -16,6 +24,8 @@ export function CartProvider({ children }) {
             : item
         )
       );
+
+      toast.success(`${product.name} quantity updated`);
     } else {
       setCartItems([
         ...cartItems,
@@ -24,11 +34,19 @@ export function CartProvider({ children }) {
           quantity: 1,
         },
       ]);
+
+      toast.success(`${product.name} added to cart`);
     }
   }
 
   function removeFromCart(id) {
+    const product = cartItems.find((item) => item.id === id);
+
     setCartItems(cartItems.filter((item) => item.id !== id));
+
+    if (product) {
+      toast.error(`${product.name} removed from cart`);
+    }
   }
 
   function increaseQuantity(id) {
@@ -42,6 +60,8 @@ export function CartProvider({ children }) {
   }
 
   function decreaseQuantity(id) {
+    const product = cartItems.find((item) => item.id === id);
+
     setCartItems(
       cartItems
         .map((item) =>
@@ -51,7 +71,21 @@ export function CartProvider({ children }) {
         )
         .filter((item) => item.quantity > 0)
     );
+
+    if (product && product.quantity === 1) {
+      toast.error(`${product.name} removed from cart`);
+    }
   }
+
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const cartCount = cartItems.reduce(
+    (count, item) => count + item.quantity,
+    0
+  );
 
   return (
     <CartContext.Provider
@@ -61,6 +95,8 @@ export function CartProvider({ children }) {
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+        cartTotal,
+        cartCount,
       }}
     >
       {children}
