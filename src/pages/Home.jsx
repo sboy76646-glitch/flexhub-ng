@@ -1,7 +1,7 @@
 function Home() {
   return (
-    <div>
-      <h1>Home Page</h1>
+    <div style={{ padding: "40px", color: "white", background: "#0f172a", minHeight: "100vh" }}>
+      <h1>FlexHub NG is working! 🎉</h1>
     </div>
   );
 }
