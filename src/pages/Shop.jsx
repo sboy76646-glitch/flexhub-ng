@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import Navbar from "../components/layout/Navbar";
+import Layout from "../components/layout/Layout";
 import ProductGrid from "../components/product/ProductGrid";
 import products from "../data/products";
 
@@ -42,11 +42,8 @@ function Shop() {
   }, [selectedCategory, sortBy]);
 
   return (
-    <>
-      <Navbar />
-
+    <Layout>
       <section className="bg-slate-950 min-h-screen py-12">
-
         <div className="max-w-7xl mx-auto px-6">
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
@@ -89,9 +86,8 @@ function Shop() {
           <ProductGrid products={filteredProducts} />
 
         </div>
-
       </section>
-    </>
+    </Layout>
   );
 }
 

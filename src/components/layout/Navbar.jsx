@@ -24,7 +24,7 @@ function Navbar({ search = "", setSearch = () => {} }) {
         </Link>
 
         {/* Search */}
-        <div className="hidden md:flex items-center bg-slate-900 rounded-xl px-4 py-2 w-[350px]">
+        <div className="hidden md:flex items-center bg-slate-900 rounded-xl px-4 py-2 w-87.5">
           <Search size={18} className="text-gray-400" />
 
           <input

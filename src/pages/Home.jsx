@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import Navbar from "../components/layout/Navbar";
+import Layout from "../components/layout/Layout";
 import HeroBanner from "../components/home/HeroBanner";
 import FlashDeals from "../components/home/FlashDeals";
 import Categories from "../components/home/Categories";
@@ -10,12 +10,10 @@ function Home() {
   const [search, setSearch] = useState("");
 
   return (
-    <>
-      <Navbar
-        search={search}
-        setSearch={setSearch}
-      />
-
+    <Layout
+      search={search}
+      setSearch={setSearch}
+    >
       <HeroBanner />
 
       <FlashDeals />
@@ -23,7 +21,7 @@ function Home() {
       <Categories />
 
       <FeaturedProducts search={search} />
-    </>
+    </Layout>
   );
 }
 
