@@ -3,80 +3,101 @@ import {
   ShoppingCart,
   Heart,
   User,
-  Menu,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
 
-function Navbar() {
+function Navbar({ search = "", setSearch = () => {} }) {
+  const { cartItems } = useCart();
+  const { wishlistItems } = useWishlist();
+
   return (
-    <nav className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+    <nav className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
 
         {/* Logo */}
-        <h1 className="text-3xl font-extrabold tracking-tight cursor-pointer select-none">
-          <span className="text-white">Flex</span>
-          <span className="text-emerald-400">Hub</span>
-          <span className="text-gray-400 text-xl ml-1">NG</span>
-        </h1>
+        <Link to="/">
+          <h1 className="text-3xl font-bold text-emerald-400 cursor-pointer">
+            FlexHub NG
+          </h1>
+        </Link>
 
         {/* Search */}
-        <div className="hidden md:flex items-center bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 w-105">
-
+        <div className="hidden md:flex items-center bg-slate-900 rounded-xl px-4 py-2 w-[350px]">
           <Search size={18} className="text-gray-400" />
 
           <input
             type="text"
-            placeholder="Search for products..."
-            className="bg-transparent outline-none ml-3 w-full text-white placeholder:text-gray-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="bg-transparent outline-none ml-3 w-full text-white placeholder-gray-400"
           />
-
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8 text-gray-300 font-medium">
-
-          <a href="#" className="hover:text-emerald-400 transition">
+        {/* Navigation */}
+        <div className="hidden lg:flex gap-8 text-gray-300">
+          <Link
+            to="/"
+            className="hover:text-emerald-400 transition"
+          >
             Home
-          </a>
+          </Link>
 
-          <a href="#" className="hover:text-emerald-400 transition">
+          <Link
+            to="/shop"
+            className="hover:text-emerald-400 transition"
+          >
             Shop
-          </a>
+          </Link>
 
-          <a href="#" className="hover:text-emerald-400 transition">
+          <Link
+            to="/"
+            className="hover:text-emerald-400 transition"
+          >
             Categories
-          </a>
-
-          <a href="#" className="hover:text-emerald-400 transition">
-            Deals
-          </a>
-
+          </Link>
         </div>
 
         {/* Icons */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-5 text-white">
 
-          <button className="relative hover:text-red-500 transition">
-            <Heart size={22} />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] rounded-full px-1.5">
-              0
-            </span>
-          </button>
+          {/* Wishlist */}
+          <Link to="/wishlist" className="relative">
+            <Heart
+              size={22}
+              className="cursor-pointer hover:text-red-500 transition"
+            />
 
-          <button className="relative hover:text-emerald-400 transition">
-            <ShoppingCart size={22} />
-            <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] rounded-full px-1.5">
-              0
-            </span>
-          </button>
+            {wishlistItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {wishlistItems.length}
+              </span>
+            )}
+          </Link>
 
-          <button className="hover:text-emerald-400 transition">
-            <User size={22} />
-          </button>
+          {/* Cart */}
+          <Link to="/cart" className="relative">
+            <ShoppingCart
+              size={22}
+              className="cursor-pointer hover:text-emerald-400 transition"
+            />
 
-          {/* Mobile Menu Icon */}
-          <button className="lg:hidden hover:text-emerald-400 transition">
-            <Menu size={26} />
-          </button>
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {cartItems.length}
+              </span>
+            )}
+          </Link>
+
+          {/* Profile */}
+          <Link to="/profile">
+            <User
+              size={22}
+              className="cursor-pointer hover:text-emerald-400 transition"
+            />
+          </Link>
 
         </div>
 

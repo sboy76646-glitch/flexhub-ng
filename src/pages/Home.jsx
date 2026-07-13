@@ -1,18 +1,29 @@
+import { useState } from "react";
+
 import Navbar from "../components/layout/Navbar";
 import HeroBanner from "../components/home/HeroBanner";
-import Categories from "../components/home/Categories";
 import FlashDeals from "../components/home/FlashDeals";
+import Categories from "../components/home/Categories";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 
 function Home() {
+  const [search, setSearch] = useState("");
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <Navbar />
+    <>
+      <Navbar
+        search={search}
+        setSearch={setSearch}
+      />
+
       <HeroBanner />
-      <Categories />
+
       <FlashDeals />
-      <FeaturedProducts />
-    </div>
+
+      <Categories />
+
+      <FeaturedProducts search={search} />
+    </>
   );
 }
 
