@@ -1,6 +1,7 @@
 import Navbar from "../components/layout/Navbar";
 import HeroBanner from "../components/home/HeroBanner";
 import Categories from "../components/home/Categories";
+import FlashDeals from "../components/home/FlashDeals";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 
 function Home() {
@@ -8,6 +9,7 @@ function Home() {
     <div className="min-h-screen bg-slate-950 text-white">
       <Navbar />
       <HeroBanner />
+      <FlashDeals/>
       <Categories />
       <FeaturedProducts />
     </div>
