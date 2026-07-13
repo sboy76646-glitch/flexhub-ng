@@ -15,7 +15,10 @@ function ProductCard({ product }) {
 
   const liked = isInWishlist(product.id);
 
-  const toggleWishlist = () => {
+  const toggleWishlist = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     if (liked) {
       removeFromWishlist(product.id);
     } else {
@@ -24,7 +27,7 @@ function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition duration-300">
+    <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-2 transition-all duration-300">
 
       <Link to={`/product/${product.id}`}>
         <img
@@ -39,13 +42,17 @@ function ProductCard({ product }) {
         <div className="flex justify-between items-start">
 
           <div>
+
             <p className="text-emerald-400 text-sm">
               {product.category}
             </p>
 
-            <h3 className="text-white text-xl font-bold mt-1">
-              {product.name}
-            </h3>
+            <Link to={`/product/${product.id}`}>
+              <h3 className="text-white text-xl font-bold mt-1 hover:text-emerald-400 transition">
+                {product.name}
+              </h3>
+            </Link>
+
           </div>
 
           <button onClick={toggleWishlist}>
@@ -62,7 +69,6 @@ function ProductCard({ product }) {
         </div>
 
         <div className="flex items-center mt-3 gap-1">
-
           <Star
             size={16}
             className="fill-yellow-400 text-yellow-400"
@@ -71,7 +77,6 @@ function ProductCard({ product }) {
           <span className="text-gray-300">
             {product.rating}
           </span>
-
         </div>
 
         <div className="flex items-center gap-3 mt-4">
@@ -95,6 +100,7 @@ function ProductCard({ product }) {
         </button>
 
       </div>
+
     </div>
   );
 }

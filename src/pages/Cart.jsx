@@ -1,98 +1,127 @@
-import Navbar from "../components/layout/Navbar";
+import { Link } from "react-router-dom";
+import Layout from "../components/layout/Layout";
 import { useCart } from "../context/CartContext";
 
 function Cart() {
   const {
     cartItems,
+    cartTotal,
     increaseQuantity,
     decreaseQuantity,
     removeFromCart,
   } = useCart();
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  if (cartItems.length === 0) {
+    return (
+      <Layout>
+        <section className="bg-slate-950 min-h-screen flex items-center justify-center px-6">
+          <div className="text-center">
 
-  return (
-    <>
-      <Navbar />
+            <div className="text-8xl mb-6">🛒</div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+            <h1 className="text-4xl font-bold text-white">
+              Your Cart is Empty
+            </h1>
 
-        <h1 className="text-4xl font-bold text-white mb-10">
-          Shopping Cart
-        </h1>
+            <p className="text-gray-400 mt-4">
+              Add some amazing products to get started.
+            </p>
 
-        {cartItems.length === 0 ? (
-          <div className="text-center py-20">
-
-            <h2 className="text-2xl text-gray-400">
-              Your cart is empty 🛒
-            </h2>
+            <Link
+              to="/shop"
+              className="inline-block mt-8 bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl text-white font-semibold transition"
+            >
+              Continue Shopping
+            </Link>
 
           </div>
-        ) : (
-          <>
-            <div className="space-y-6">
+        </section>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+
+      <section className="bg-slate-950 min-h-screen py-16">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          <h1 className="text-5xl font-bold text-white mb-12">
+            Shopping Cart
+          </h1>
+
+          <div className="grid lg:grid-cols-3 gap-10">
+
+            {/* Cart Items */}
+
+            <div className="lg:col-span-2 space-y-6">
 
               {cartItems.map((item) => (
 
                 <div
                   key={item.id}
-                  className="bg-slate-800 rounded-xl p-5 flex items-center justify-between"
+                  className="bg-slate-900 rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-center"
                 >
 
-                  <div className="flex items-center gap-6">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-36 h-36 object-cover rounded-xl"
+                  />
 
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-24 h-24 rounded-lg object-cover"
-                    />
+                  <div className="flex-1">
 
-                    <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      {item.name}
+                    </h2>
 
-                      <h2 className="text-xl text-white font-semibold">
-                        {item.name}
-                      </h2>
+                    <p className="text-emerald-400 mt-2">
+                      {item.category}
+                    </p>
 
-                      <p className="text-gray-400">
-                        ₦{item.price.toLocaleString()}
-                      </p>
+                    <p className="text-3xl font-bold text-emerald-400 mt-4">
+                      ₦{item.price.toLocaleString()}
+                    </p>
+
+                    <div className="flex items-center gap-3 mt-6">
+
+                      <button
+                        onClick={() => decreaseQuantity(item.id)}
+                        className="bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-lg text-white"
+                      >
+                        -
+                      </button>
+
+                      <span className="text-white text-xl font-semibold">
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        onClick={() => increaseQuantity(item.id)}
+                        className="bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-lg text-white"
+                      >
+                        +
+                      </button>
 
                     </div>
 
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-end gap-4">
 
                     <button
-                      onClick={() => decreaseQuantity(item.id)}
-                      className="bg-slate-700 px-3 py-1 rounded"
+                      onClick={() => removeFromCart(item.id)}
+                      className="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-lg text-white transition"
                     >
-                      -
+                      Remove
                     </button>
 
-                    <span className="text-white">
-                      {item.quantity}
-                    </span>
-
-                    <button
-                      onClick={() => increaseQuantity(item.id)}
-                      className="bg-slate-700 px-3 py-1 rounded"
-                    >
-                      +
-                    </button>
+                    <h3 className="text-2xl font-bold text-white">
+                      ₦{(item.price * item.quantity).toLocaleString()}
+                    </h3>
 
                   </div>
-
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg"
-                  >
-                    Remove
-                  </button>
 
                 </div>
 
@@ -100,27 +129,67 @@ function Cart() {
 
             </div>
 
-            <div className="mt-12 bg-slate-800 rounded-xl p-8">
+            {/* Summary */}
 
-              <h2 className="text-3xl font-bold text-white">
-                Total
-              </h2>
+            <div>
 
-              <p className="text-emerald-400 text-4xl mt-4">
-                ₦{total.toLocaleString()}
-              </p>
+              <div className="bg-slate-900 rounded-2xl p-8 sticky top-28">
 
-              <button className="mt-8 bg-emerald-500 hover:bg-emerald-600 px-8 py-4 rounded-xl font-semibold">
-                Proceed to Checkout
-              </button>
+                <h2 className="text-3xl font-bold text-white mb-8">
+                  Order Summary
+                </h2>
+
+                <div className="flex justify-between text-gray-300 mb-4">
+                  <span>Items</span>
+                  <span>{cartItems.length}</span>
+                </div>
+
+                <div className="flex justify-between text-gray-300 mb-4">
+                  <span>Delivery</span>
+                  <span className="text-emerald-400">
+                    FREE
+                  </span>
+                </div>
+
+                <div className="border-t border-slate-700 my-6"></div>
+
+                <div className="flex justify-between">
+
+                  <span className="text-white text-xl font-bold">
+                    Total
+                  </span>
+
+                  <span className="text-emerald-400 text-3xl font-bold">
+                    ₦{cartTotal.toLocaleString()}
+                  </span>
+
+                </div>
+
+                <Link
+                  to="/checkout"
+                  className="block w-full mt-8 bg-emerald-500 hover:bg-emerald-600 py-4 rounded-xl text-lg font-bold text-white text-center transition"
+                >
+                  Proceed to Checkout
+                </Link>
+
+                <Link
+                  to="/shop"
+                  className="block text-center mt-5 text-emerald-400 hover:text-emerald-300"
+                >
+                  Continue Shopping
+                </Link>
+
+              </div>
 
             </div>
 
-          </>
-        )}
+          </div>
 
-      </div>
-    </>
+        </div>
+
+      </section>
+
+    </Layout>
   );
 }
 

@@ -4,104 +4,118 @@ import {
   Heart,
   User,
 } from "lucide-react";
+
 import { Link } from "react-router-dom";
+
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 
 function Navbar({ search = "", setSearch = () => {} }) {
-  const { cartItems } = useCart();
-  const { wishlistItems } = useWishlist();
+
+  const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800">
+
       <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
 
-        {/* Logo */}
         <Link to="/">
-          <h1 className="text-3xl font-bold text-emerald-400 cursor-pointer">
+          <h1 className="text-3xl font-bold text-emerald-400">
             FlexHub NG
           </h1>
         </Link>
 
-        {/* Search */}
-        <div className="hidden md:flex items-center bg-slate-900 rounded-xl px-4 py-2 w-87.5">
-          <Search size={18} className="text-gray-400" />
+        <div className="hidden md:flex items-center bg-slate-900 rounded-xl px-4 py-2 w-[350px]">
+
+          <Search
+            size={18}
+            className="text-gray-400"
+          />
 
           <input
-            type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            type="text"
             placeholder="Search products..."
-            className="bg-transparent outline-none ml-3 w-full text-white placeholder-gray-400"
+            className="bg-transparent outline-none ml-3 w-full text-white"
           />
+
         </div>
 
-        {/* Navigation */}
         <div className="hidden lg:flex gap-8 text-gray-300">
+
           <Link
             to="/"
-            className="hover:text-emerald-400 transition"
+            className="hover:text-emerald-400"
           >
             Home
           </Link>
 
           <Link
             to="/shop"
-            className="hover:text-emerald-400 transition"
+            className="hover:text-emerald-400"
           >
             Shop
           </Link>
 
           <Link
             to="/"
-            className="hover:text-emerald-400 transition"
+            className="hover:text-emerald-400"
           >
             Categories
           </Link>
+
         </div>
 
-        {/* Icons */}
-        <div className="flex items-center gap-5 text-white">
+        <div className="flex items-center gap-5">
 
-          {/* Wishlist */}
-          <Link to="/wishlist" className="relative">
-            <Heart
-              size={22}
-              className="cursor-pointer hover:text-red-500 transition"
-            />
+          <Link
+            to="/wishlist"
+            className="relative"
+          >
 
-            {wishlistItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {wishlistItems.length}
+            <Heart className="text-white hover:text-red-500 transition" />
+
+            {wishlistCount > 0 && (
+
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex justify-center items-center">
+
+                {wishlistCount}
+
               </span>
+
             )}
+
           </Link>
 
-          {/* Cart */}
-          <Link to="/cart" className="relative">
-            <ShoppingCart
-              size={22}
-              className="cursor-pointer hover:text-emerald-400 transition"
-            />
+          <Link
+            to="/cart"
+            className="relative"
+          >
 
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {cartItems.length}
+            <ShoppingCart className="text-white hover:text-emerald-400 transition" />
+
+            {cartCount > 0 && (
+
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex justify-center items-center">
+
+                {cartCount}
+
               </span>
+
             )}
+
           </Link>
 
-          {/* Profile */}
           <Link to="/profile">
-            <User
-              size={22}
-              className="cursor-pointer hover:text-emerald-400 transition"
-            />
+            <User className="text-white hover:text-emerald-400 transition" />
           </Link>
 
         </div>
 
       </div>
+
     </nav>
   );
 }

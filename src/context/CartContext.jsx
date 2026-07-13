@@ -1,89 +1,82 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { createContext, useContext, useState } from "react";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem("flexhub-cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [cartItems, setCartItems] = useState([]);
 
-  useEffect(() => {
-    localStorage.setItem("flexhub-cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  function addToCart(product) {
-    const existing = cartItems.find((item) => item.id === product.id);
-
-    if (existing) {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+  function addToCart(product, quantity = 1) {
+    setCartItems((prevItems) => {
+      const existing = prevItems.find(
+        (item) => item.id === product.id
       );
 
-      toast.success(`${product.name} quantity updated`);
-    } else {
-      setCartItems([
-        ...cartItems,
+      if (existing) {
+        return prevItems.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+              }
+            : item
+        );
+      }
+
+      return [
+        ...prevItems,
         {
           ...product,
-          quantity: 1,
+          quantity,
         },
-      ]);
-
-      toast.success(`${product.name} added to cart`);
-    }
+      ];
+    });
   }
 
   function removeFromCart(id) {
-    const product = cartItems.find((item) => item.id === id);
-
-    setCartItems(cartItems.filter((item) => item.id !== id));
-
-    if (product) {
-      toast.error(`${product.name} removed from cart`);
-    }
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => item.id !== id)
+    );
   }
 
   function increaseQuantity(id) {
-    setCartItems(
-      cartItems.map((item) =>
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
         item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
+          ? {
+              ...item,
+              quantity: item.quantity + 1,
+            }
           : item
       )
     );
   }
 
   function decreaseQuantity(id) {
-    const product = cartItems.find((item) => item.id === id);
-
-    setCartItems(
-      cartItems
+    setCartItems((prevItems) =>
+      prevItems
         .map((item) =>
           item.id === id
-            ? { ...item, quantity: item.quantity - 1 }
+            ? {
+                ...item,
+                quantity: item.quantity - 1,
+              }
             : item
         )
         .filter((item) => item.quantity > 0)
     );
-
-    if (product && product.quantity === 1) {
-      toast.error(`${product.name} removed from cart`);
-    }
   }
 
-  const cartTotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+  function clearCart() {
+    setCartItems([]);
+  }
+
+  const cartCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
     0
   );
 
-  const cartCount = cartItems.reduce(
-    (count, item) => count + item.quantity,
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
     0
   );
 
@@ -91,12 +84,13 @@ export function CartProvider({ children }) {
     <CartContext.Provider
       value={{
         cartItems,
+        cartCount,
+        cartTotal,
         addToCart,
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
-        cartTotal,
-        cartCount,
+        clearCart,
       }}
     >
       {children}

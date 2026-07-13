@@ -17,40 +17,55 @@ export function WishlistProvider({ children }) {
   }, [wishlistItems]);
 
   function addToWishlist(product) {
-    const exists = wishlistItems.find(
-      (item) => item.id === product.id
-    );
+    setWishlistItems((prevItems) => {
+      const exists = prevItems.find(
+        (item) => item.id === product.id
+      );
 
-    if (!exists) {
-      setWishlistItems([...wishlistItems, product]);
+      if (exists) return prevItems;
+
       toast.success(`${product.name} added to wishlist ❤️`);
-    }
+
+      return [...prevItems, product];
+    });
   }
 
   function removeFromWishlist(id) {
-    const product = wishlistItems.find(
-      (item) => item.id === id
-    );
+    setWishlistItems((prevItems) => {
+      const product = prevItems.find(
+        (item) => item.id === id
+      );
 
-    setWishlistItems(
-      wishlistItems.filter((item) => item.id !== id)
-    );
+      if (product) {
+        toast.error(`${product.name} removed from wishlist`);
+      }
 
-    if (product) {
-      toast.error(`${product.name} removed from wishlist`);
-    }
+      return prevItems.filter(
+        (item) => item.id !== id
+      );
+    });
+  }
+
+  function clearWishlist() {
+    setWishlistItems([]);
   }
 
   function isInWishlist(id) {
-    return wishlistItems.some((item) => item.id === id);
+    return wishlistItems.some(
+      (item) => item.id === id
+    );
   }
+
+  const wishlistCount = wishlistItems.length;
 
   return (
     <WishlistContext.Provider
       value={{
         wishlistItems,
+        wishlistCount,
         addToWishlist,
         removeFromWishlist,
+        clearWishlist,
         isInWishlist,
       }}
     >
