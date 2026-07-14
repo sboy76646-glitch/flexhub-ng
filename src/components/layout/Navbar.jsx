@@ -3,17 +3,20 @@ import {
   ShoppingCart,
   Heart,
   User,
+  LogOut,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
 
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { useAuth } from "../../context/AuthContext";
 
 function Navbar({ search = "", setSearch = () => {} }) {
-
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
+
+  const { user, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800">
@@ -47,21 +50,21 @@ function Navbar({ search = "", setSearch = () => {} }) {
 
           <Link
             to="/"
-            className="hover:text-emerald-400"
+            className="hover:text-emerald-400 transition"
           >
             Home
           </Link>
 
           <Link
             to="/shop"
-            className="hover:text-emerald-400"
+            className="hover:text-emerald-400 transition"
           >
             Shop
           </Link>
 
           <Link
             to="/"
-            className="hover:text-emerald-400"
+            className="hover:text-emerald-400 transition"
           >
             Categories
           </Link>
@@ -69,6 +72,8 @@ function Navbar({ search = "", setSearch = () => {} }) {
         </div>
 
         <div className="flex items-center gap-5">
+
+          {/* Wishlist */}
 
           <Link
             to="/wishlist"
@@ -78,16 +83,14 @@ function Navbar({ search = "", setSearch = () => {} }) {
             <Heart className="text-white hover:text-red-500 transition" />
 
             {wishlistCount > 0 && (
-
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex justify-center items-center">
-
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center">
                 {wishlistCount}
-
               </span>
-
             )}
 
           </Link>
+
+          {/* Cart */}
 
           <Link
             to="/cart"
@@ -97,20 +100,59 @@ function Navbar({ search = "", setSearch = () => {} }) {
             <ShoppingCart className="text-white hover:text-emerald-400 transition" />
 
             {cartCount > 0 && (
-
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex justify-center items-center">
-
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center">
                 {cartCount}
-
               </span>
-
             )}
 
           </Link>
 
-          <Link to="/profile">
-            <User className="text-white hover:text-emerald-400 transition" />
-          </Link>
+          {/* Authentication */}
+
+          {user ? (
+
+            <div className="flex items-center gap-3">
+
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 text-white hover:text-emerald-400 transition"
+              >
+                <User size={20} />
+                <span className="hidden md:block">
+                  {user.name}
+                </span>
+              </Link>
+
+              <button
+                onClick={logout}
+                className="text-red-400 hover:text-red-500 transition"
+              >
+                <LogOut size={20} />
+              </button>
+
+            </div>
+
+          ) : (
+
+            <div className="flex items-center gap-3">
+
+              <Link
+                to="/login"
+                className="text-white hover:text-emerald-400 transition"
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg text-white transition"
+              >
+                Register
+              </Link>
+
+            </div>
+
+          )}
 
         </div>
 

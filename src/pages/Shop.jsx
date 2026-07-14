@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+ import { useMemo, useState } from "react";
 
 import Layout from "../components/layout/Layout";
 import ProductGrid from "../components/product/ProductGrid";
