@@ -11,20 +11,35 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.CLIENT_URL,
-].filter(Boolean);
+  "https://flexhub-ng.netlify.app",
+];
 
 app.use(
   cors({
     origin(origin, callback) {
-      // Allows tools such as Postman and requests without an Origin header.
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests without an origin, such as Postman or direct API tests
+      if (!origin) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      // Allow the main Netlify site and Netlify deploy-preview domains
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        origin.endsWith("--flexhub-ng.netlify.app");
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+
+      console.log("Blocked CORS origin:", origin);
+
+      return callback(
+        new Error(`CORS blocked this origin: ${origin}`)
+      );
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
