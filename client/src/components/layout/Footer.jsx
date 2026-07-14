@@ -1,227 +1,289 @@
 import {
-  ShoppingBag,
+  CreditCard,
   Mail,
-  Phone,
   MapPin,
+  Phone,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
 } from "lucide-react";
+
+import { Link } from "react-router-dom";
+
+import logo from "../../assets/logo/logo.png";
 
 function Footer() {
   return (
-    <footer className="bg-slate-950 border-t border-slate-800 mt-20">
+    <footer className="mt-20 border-t border-slate-800 bg-slate-950">
 
-      {/* Features */}
+      {/* Trust features */}
       <div className="border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8">
+        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-3">
 
-          <div className="text-center">
-            <div className="text-4xl mb-3">🚚</div>
-            <h3 className="text-white font-semibold">
-              Nationwide Delivery
-            </h3>
-            <p className="text-gray-400 text-sm mt-2">
-              Fast delivery across Nigeria.
-            </p>
+          <div className="flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
+              <Truck size={25} />
+            </div>
+
+            <div>
+              <h3 className="font-bold text-white">
+                Nationwide Delivery
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Fast delivery across Nigeria.
+              </p>
+            </div>
           </div>
 
-          <div className="text-center">
-            <div className="text-4xl mb-3">🛡️</div>
-            <h3 className="text-white font-semibold">
-              Secure Shopping
-            </h3>
-            <p className="text-gray-400 text-sm mt-2">
-              Safe payments and trusted products.
-            </p>
+          <div className="flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
+              <ShieldCheck size={25} />
+            </div>
+
+            <div>
+              <h3 className="font-bold text-white">
+                Secure Shopping
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Safe payments and trusted products.
+              </p>
+            </div>
           </div>
 
-          <div className="text-center">
-            <div className="text-4xl mb-3">💳</div>
-            <h3 className="text-white font-semibold">
-              Easy Payments
-            </h3>
-            <p className="text-gray-400 text-sm mt-2">
-              Bank transfer and Paystack supported.
-            </p>
+          <div className="flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
+              <CreditCard size={25} />
+            </div>
+
+            <div>
+              <h3 className="font-bold text-white">
+                Easy Payments
+              </h3>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Bank transfer and Paystack supported.
+              </p>
+            </div>
           </div>
 
         </div>
       </div>
 
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+      {/* Main footer */}
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-2 lg:grid-cols-4">
 
         {/* Brand */}
         <div>
-
-          <div className="flex items-center gap-3">
-            <ShoppingBag
-              size={34}
-              className="text-emerald-400"
+          <Link
+            to="/"
+            className="inline-flex items-center gap-3"
+          >
+            <img
+              src={logo}
+              alt="FlexHub NG"
+              className="h-16 w-16 object-contain"
             />
 
-            <h2 className="text-3xl font-bold text-emerald-400">
-              FlexHub NG
-            </h2>
-          </div>
+            <div className="leading-none">
+              <h2 className="text-2xl font-black tracking-tight">
+                <span className="text-white">FLEX</span>
+                <span className="text-orange-500">HUB</span>
+              </h2>
 
-          <p className="text-gray-400 mt-6 leading-7">
-            Nigeria's premium online marketplace for gadgets,
+              <p className="mt-1 text-[10px] font-semibold tracking-[0.45em] text-slate-400">
+                NG
+              </p>
+            </div>
+          </Link>
+
+          <p className="mt-6 leading-7 text-slate-400">
+            Nigeria&apos;s online marketplace for gadgets, sneakers,
             fashion, accessories and electronics.
           </p>
 
+          <div className="mt-6 flex items-center gap-2 text-sm text-orange-400">
+            <ShoppingBag size={17} />
+            Style. Tech. Lifestyle.
+          </div>
         </div>
 
         {/* Shop */}
         <div>
-
-          <h3 className="text-white text-xl font-bold mb-5">
+          <h3 className="mb-5 text-xl font-bold text-white">
             Shop
           </h3>
 
-          <ul className="space-y-3 text-gray-400">
-
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Smartphones
+          <ul className="space-y-3 text-slate-400">
+            <li>
+              <Link to="/shop" className="hover:text-orange-400">
+                Smartphones
+              </Link>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Laptops
+            <li>
+              <Link to="/shop" className="hover:text-orange-400">
+                Laptops
+              </Link>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Sneakers
+            <li>
+              <Link to="/shop" className="hover:text-orange-400">
+                Sneakers
+              </Link>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Gaming
+            <li>
+              <Link to="/shop" className="hover:text-orange-400">
+                Gaming
+              </Link>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Accessories
+            <li>
+              <Link to="/shop" className="hover:text-orange-400">
+                Accessories
+              </Link>
             </li>
-
           </ul>
-
         </div>
 
         {/* Support */}
         <div>
-
-          <h3 className="text-white text-xl font-bold mb-5">
+          <h3 className="mb-5 text-xl font-bold text-white">
             Support
           </h3>
 
-          <ul className="space-y-3 text-gray-400">
-
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Help Center
+          <ul className="space-y-3 text-slate-400">
+            <li>
+              <button
+                type="button"
+                className="hover:text-orange-400"
+              >
+                Help Center
+              </button>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Track Order
+            <li>
+              <button
+                type="button"
+                className="hover:text-orange-400"
+              >
+                Track Order
+              </button>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Returns
+            <li>
+              <button
+                type="button"
+                className="hover:text-orange-400"
+              >
+                Returns
+              </button>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Privacy Policy
+            <li>
+              <button
+                type="button"
+                className="hover:text-orange-400"
+              >
+                Privacy Policy
+              </button>
             </li>
 
-            <li className="hover:text-emerald-400 cursor-pointer">
-              Terms & Conditions
+            <li>
+              <button
+                type="button"
+                className="hover:text-orange-400"
+              >
+                Terms & Conditions
+              </button>
             </li>
-
           </ul>
-
         </div>
 
         {/* Contact */}
         <div>
-
-          <h3 className="text-white text-xl font-bold mb-5">
+          <h3 className="mb-5 text-xl font-bold text-white">
             Contact
           </h3>
 
-          <div className="space-y-5 text-gray-400">
-
+          <div className="space-y-5 text-slate-400">
             <div className="flex items-center gap-3">
               <MapPin
                 size={18}
-                className="text-emerald-400"
+                className="shrink-0 text-orange-400"
               />
+
               <span>Lagos, Nigeria</span>
             </div>
 
             <div className="flex items-center gap-3">
               <Phone
                 size={18}
-                className="text-emerald-400"
+                className="shrink-0 text-orange-400"
               />
+
               <a
                 href="tel:+2349113393303"
-                className="hover:text-emerald-400"
+                className="hover:text-orange-400"
               >
                 0911 339 3303
               </a>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <Mail
                 size={18}
-                className="text-emerald-400"
+                className="mt-1 shrink-0 text-orange-400"
               />
+
               <a
                 href="mailto:danny.olidean@gmail.com"
-                className="hover:text-emerald-400"
+                className="break-all hover:text-orange-400"
               >
                 danny.olidean@gmail.com
               </a>
             </div>
-
           </div>
 
           <div className="mt-8">
-
-            <h4 className="text-white font-semibold mb-3">
-              Subscribe to our Newsletter
+            <h4 className="mb-3 font-semibold text-white">
+              Subscribe to our newsletter
             </h4>
 
-            <div className="flex">
-
+            <div className="flex overflow-hidden rounded-xl border border-slate-800 bg-slate-900 focus-within:border-orange-500">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 bg-slate-900 text-white px-4 py-3 rounded-l-xl outline-none"
+                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-white outline-none placeholder:text-slate-500"
               />
 
-              <button className="bg-emerald-500 hover:bg-emerald-600 px-5 rounded-r-xl text-white font-semibold">
+              <button
+                type="button"
+                className="bg-orange-500 px-5 font-semibold text-white hover:bg-orange-600"
+              >
                 Join
               </button>
-
             </div>
-
           </div>
-
         </div>
 
       </div>
 
       {/* Bottom */}
       <div className="border-t border-slate-800">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 md:flex-row">
 
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
-
-          <p className="text-gray-500 text-sm">
+          <p className="text-sm text-slate-500">
             © 2026 FlexHub NG. All rights reserved.
           </p>
 
-          <p className="text-gray-500 text-sm mt-3 md:mt-0">
+          <p className="text-sm text-slate-500">
             Built with ❤️ in Nigeria.
           </p>
 
         </div>
-
       </div>
 
     </footer>

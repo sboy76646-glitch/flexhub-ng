@@ -1,83 +1,123 @@
-const deals = [
-  {
-    id: 1,
-    name: "Nike Air Max",
-    price: "₦65,000",
-    oldPrice: "₦80,000",
-    discount: "-19%",
-  },
-  {
-    id: 2,
-    name: "Apple AirPods Pro",
-    price: "₦180,000",
-    oldPrice: "₦220,000",
-    discount: "-18%",
-  },
-  {
-    id: 3,
-    name: "PlayStation 5",
-    price: "₦950,000",
-    oldPrice: "₦1,050,000",
-    discount: "-10%",
-  },
-];
+import { ArrowRight, Clock3, Flame } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import products from "../../data/products";
+import { useCart } from "../../context/CartContext";
 
 function FlashDeals() {
+  const { addToCart } = useCart();
+
+  const deals = products.slice(0, 3).map((product) => {
+    const discount =
+      product.oldPrice && product.oldPrice > product.price
+        ? Math.round(
+            ((product.oldPrice - product.price) /
+              product.oldPrice) *
+              100
+          )
+        : 0;
+
+    return {
+      ...product,
+      discount,
+    };
+  });
+
   return (
-    <section className="bg-slate-900 py-20">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative overflow-hidden border-y border-slate-800 bg-slate-900 py-20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.1),transparent_28rem)]" />
 
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-4xl font-bold text-white">
-            🔥 Flash Deals
-          </h2>
+      <div className="relative mx-auto max-w-7xl px-6">
 
-          <button className="text-emerald-400 hover:underline">
-            View All →
-          </button>
-        </div>
+        <div className="mb-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-orange-400">
+              <Flame size={22} />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-          {deals.map((deal) => (
-
-            <div
-              key={deal.id}
-              className="bg-slate-800 rounded-2xl p-6 hover:scale-105 transition duration-300 shadow-lg"
-            >
-
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm">
-                {deal.discount}
+              <span className="text-sm font-bold uppercase tracking-[0.22em]">
+                Limited-time offers
               </span>
-
-              <div className="h-52 flex items-center justify-center text-6xl">
-                📦
-              </div>
-
-              <h3 className="text-white text-xl font-semibold">
-                {deal.name}
-              </h3>
-
-              <div className="mt-4">
-
-                <span className="text-emerald-400 text-2xl font-bold">
-                  {deal.price}
-                </span>
-
-                <span className="text-gray-500 line-through ml-3">
-                  {deal.oldPrice}
-                </span>
-
-              </div>
-
-              <button className="mt-6 w-full bg-emerald-500 hover:bg-emerald-600 py-3 rounded-xl font-semibold text-white transition">
-                Add to Cart
-              </button>
-
             </div>
 
-          ))}
+            <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+              Flash Deals
+            </h2>
 
+            <p className="mt-3 max-w-2xl text-slate-400">
+              Grab selected products at discounted prices before the
+              offers expire.
+            </p>
+          </div>
+
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-2 font-bold text-orange-400 hover:text-orange-300"
+          >
+            View All Deals
+            <ArrowRight size={18} />
+          </Link>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {deals.map((deal) => (
+            <article
+              key={deal.id}
+              className="group overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 shadow-xl transition hover:-translate-y-2 hover:border-orange-500/40 hover:shadow-orange-500/10"
+            >
+              <div className="relative overflow-hidden">
+                <Link to={`/product/${deal.id}`}>
+                  <img
+                    src={deal.image}
+                    alt={deal.name}
+                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </Link>
+
+                {deal.discount > 0 && (
+                  <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1.5 text-sm font-black text-white shadow-lg">
+                    -{deal.discount}%
+                  </span>
+                )}
+
+                <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/85 px-3 py-2 text-xs font-semibold text-white backdrop-blur">
+                  <Clock3 size={15} className="text-orange-400" />
+                  Limited stock
+                </div>
+              </div>
+
+              <div className="p-6">
+                <p className="text-sm font-semibold text-orange-400">
+                  {deal.category}
+                </p>
+
+                <Link to={`/product/${deal.id}`}>
+                  <h3 className="mt-2 text-2xl font-black text-white transition hover:text-orange-400">
+                    {deal.name}
+                  </h3>
+                </Link>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <span className="text-3xl font-black text-orange-400">
+                    ₦{deal.price.toLocaleString()}
+                  </span>
+
+                  {deal.oldPrice && (
+                    <span className="text-slate-500 line-through">
+                      ₦{deal.oldPrice.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => addToCart(deal)}
+                  className="mt-6 w-full rounded-2xl bg-orange-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
 
       </div>

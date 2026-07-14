@@ -1,4 +1,10 @@
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+} from "react";
+
+import toast from "react-hot-toast";
 
 const CartContext = createContext();
 
@@ -6,13 +12,13 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
 
   function addToCart(product, quantity = 1) {
-    setCartItems((prevItems) => {
-      const existing = prevItems.find(
+    setCartItems((previousItems) => {
+      const existingProduct = previousItems.find(
         (item) => item.id === product.id
       );
 
-      if (existing) {
-        return prevItems.map((item) =>
+      if (existingProduct) {
+        return previousItems.map((item) =>
           item.id === product.id
             ? {
                 ...item,
@@ -23,24 +29,38 @@ export function CartProvider({ children }) {
       }
 
       return [
-        ...prevItems,
+        ...previousItems,
         {
           ...product,
           quantity,
         },
       ];
     });
-  }
 
-  function removeFromCart(id) {
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item.id !== id)
+    toast.success(
+      `${quantity} × ${product.name} added to cart`
     );
   }
 
+  function removeFromCart(id) {
+    setCartItems((previousItems) => {
+      const product = previousItems.find(
+        (item) => item.id === id
+      );
+
+      if (product) {
+        toast.error(`${product.name} removed from cart`);
+      }
+
+      return previousItems.filter(
+        (item) => item.id !== id
+      );
+    });
+  }
+
   function increaseQuantity(id) {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
+    setCartItems((previousItems) =>
+      previousItems.map((item) =>
         item.id === id
           ? {
               ...item,
@@ -52,8 +72,8 @@ export function CartProvider({ children }) {
   }
 
   function decreaseQuantity(id) {
-    setCartItems((prevItems) =>
-      prevItems
+    setCartItems((previousItems) =>
+      previousItems
         .map((item) =>
           item.id === id
             ? {
@@ -68,6 +88,7 @@ export function CartProvider({ children }) {
 
   function clearCart() {
     setCartItems([]);
+    toast.success("Cart cleared");
   }
 
   const cartCount = cartItems.reduce(
@@ -76,7 +97,8 @@ export function CartProvider({ children }) {
   );
 
   const cartTotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) =>
+      total + item.price * item.quantity,
     0
   );
 
@@ -99,5 +121,13 @@ export function CartProvider({ children }) {
 }
 
 export function useCart() {
-  return useContext(CartContext);
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error(
+      "useCart must be used inside CartProvider."
+    );
+  }
+
+  return context;
 } 

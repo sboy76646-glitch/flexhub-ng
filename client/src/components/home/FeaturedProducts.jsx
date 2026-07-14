@@ -1,17 +1,64 @@
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import products from "../../data/products";
 import ProductGrid from "../product/ProductGrid";
 
-function FeaturedProducts() {
+function FeaturedProducts({ search = "" }) {
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <section className="bg-slate-950 py-20">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative overflow-hidden bg-slate-950 py-20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.08),transparent_30rem)]" />
 
-        <h2 className="text-4xl font-bold text-white mb-12">
-          ⭐ Featured Products
-        </h2>
+      <div className="relative mx-auto max-w-7xl px-6">
+        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-orange-400">
+              <Sparkles size={20} />
 
-        <ProductGrid products={products} />
+              <p className="text-sm font-bold uppercase tracking-[0.25em]">
+                Handpicked for you
+              </p>
+            </div>
 
+            <h2 className="mt-4 text-4xl font-black text-white sm:text-5xl">
+              Featured{" "}
+              <span className="brand-gradient-text">
+                Products
+              </span>
+            </h2>
+
+            <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-400">
+              Explore some of our most popular gadgets, fashion items,
+              electronics, and lifestyle products.
+            </p>
+          </div>
+
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-2 font-bold text-orange-400 hover:text-orange-300"
+          >
+            View All Products
+            <ArrowRight size={18} />
+          </Link>
+        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="rounded-3xl border border-slate-800 bg-slate-900 px-6 py-16 text-center">
+            <h3 className="text-2xl font-bold text-white">
+              No products found
+            </h3>
+
+            <p className="mt-3 text-slate-400">
+              Try searching with a different product name.
+            </p>
+          </div>
+        ) : (
+          <ProductGrid products={filteredProducts} />
+        )}
       </div>
     </section>
   );

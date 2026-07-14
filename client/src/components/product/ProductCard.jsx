@@ -1,4 +1,11 @@
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import {
+  BadgeCheck,
+  Eye,
+  Heart,
+  ShoppingCart,
+  Star,
+  Truck,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { useCart } from "../../context/CartContext";
@@ -15,93 +22,150 @@ function ProductCard({ product }) {
 
   const liked = isInWishlist(product.id);
 
-  const toggleWishlist = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const discount =
+    product.oldPrice && product.oldPrice > product.price
+      ? Math.round(
+          ((product.oldPrice - product.price) /
+            product.oldPrice) *
+            100
+        )
+      : 0;
+
+  function toggleWishlist(event) {
+    event.preventDefault();
+    event.stopPropagation();
 
     if (liked) {
       removeFromWishlist(product.id);
     } else {
       addToWishlist(product);
     }
-  };
+  }
+
+  function handleAddToCart(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    addToCart(product);
+  }
 
   return (
-    <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-2 transition-all duration-300">
+    <article className="product-card">
+      <div className="relative h-64 shrink-0 overflow-hidden bg-slate-950">
+        <Link to={`/product/${product.id}`}>
+          <img
+            src={product.image}
+            alt={product.name}
+            className="product-card-image h-full w-full object-cover"
+          />
+        </Link>
 
-      <Link to={`/product/${product.id}`}>
-        <img
-          src={product.image}
-          alt={product.name}
-          className="h-60 w-full object-cover"
-        />
-      </Link>
+        {discount > 0 && (
+          <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1.5 text-sm font-black text-white shadow-lg">
+            -{discount}%
+          </span>
+        )}
 
-      <div className="p-5">
+        <button
+          type="button"
+          onClick={toggleWishlist}
+          aria-label={
+            liked
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+          }
+          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-slate-950/90 text-white backdrop-blur transition hover:scale-110 hover:bg-white hover:text-red-500"
+        >
+          <Heart
+            size={21}
+            className={
+              liked
+                ? "fill-red-500 text-red-500"
+                : ""
+            }
+          />
+        </button>
 
-        <div className="flex justify-between items-start">
+        <Link
+          to={`/product/${product.id}`}
+          className="product-quick-view absolute bottom-4 left-1/2 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-950 shadow-lg"
+        >
+          <Eye size={17} />
+          Quick View
+        </Link>
+      </div>
 
-          <div>
-
-            <p className="text-emerald-400 text-sm">
+      <div className="flex flex-1 flex-col p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-orange-400">
               {product.category}
             </p>
 
             <Link to={`/product/${product.id}`}>
-              <h3 className="text-white text-xl font-bold mt-1 hover:text-emerald-400 transition">
+              <h3 className="mt-2 min-h-[56px] text-xl font-black leading-7 text-white transition-colors hover:text-orange-400">
                 {product.name}
               </h3>
             </Link>
-
           </div>
 
-          <button onClick={toggleWishlist}>
-            <Heart
-              size={22}
-              className={`transition ${
-                liked
-                  ? "fill-red-500 text-red-500"
-                  : "text-white hover:text-red-500"
-              }`}
-            />
-          </button>
-
-        </div>
-
-        <div className="flex items-center mt-3 gap-1">
-          <Star
-            size={16}
-            className="fill-yellow-400 text-yellow-400"
+          <BadgeCheck
+            size={22}
+            className="shrink-0 text-orange-400"
           />
-
-          <span className="text-gray-300">
-            {product.rating}
-          </span>
         </div>
 
-        <div className="flex items-center gap-3 mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Star
+              size={17}
+              className="fill-yellow-400 text-yellow-400"
+            />
 
-          <span className="text-emerald-400 text-2xl font-bold">
+            <span className="font-semibold text-white">
+              {product.rating}
+            </span>
+          </div>
+
+          <span className="text-slate-600">•</span>
+
+          <div className="flex items-center gap-1 text-sm text-slate-400">
+            <Truck
+              size={16}
+              className="text-orange-400"
+            />
+
+            Fast delivery
+          </div>
+        </div>
+
+        <div className="mt-6 min-h-[76px]">
+          <span className="block text-3xl font-black text-orange-400">
             ₦{product.price.toLocaleString()}
           </span>
 
-          <span className="text-gray-500 line-through">
-            ₦{product.oldPrice.toLocaleString()}
+          <span
+            className={`mt-2 block text-slate-500 line-through ${
+              product.oldPrice ? "visible" : "invisible"
+            }`}
+          >
+            ₦
+            {product.oldPrice
+              ? product.oldPrice.toLocaleString()
+              : "0"}
           </span>
-
         </div>
 
         <button
-          onClick={() => addToCart(product)}
-          className="w-full mt-6 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl flex items-center justify-center gap-2 transition"
+          type="button"
+          onClick={handleAddToCart}
+          className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-600 active:scale-95"
         >
-          <ShoppingCart size={18} />
+          <ShoppingCart size={19} />
           Add to Cart
         </button>
-
       </div>
-
-    </div>
+    </article>
   );
 }
 

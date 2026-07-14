@@ -1,3 +1,5 @@
+import macbookImage from "../assets/images/macbook-air-m3.jpg";
+
 const products = [
   {
     id: 1,
@@ -7,9 +9,10 @@ const products = [
     oldPrice: 1100000,
     rating: 4.8,
     stock: 12,
-    image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600",
+    image:
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=900&auto=format&fit=crop",
     description:
-      "Experience flagship performance with the Samsung Galaxy S24, featuring a stunning AMOLED display, powerful processor, professional-grade cameras, and all-day battery life.",
+      "Experience flagship performance with the Samsung Galaxy S24, featuring a stunning AMOLED display, powerful processor, professional-grade cameras, and dependable all-day battery life.",
   },
   {
     id: 2,
@@ -19,9 +22,10 @@ const products = [
     oldPrice: 200000,
     rating: 4.9,
     stock: 8,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
+    image:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&auto=format&fit=crop",
     description:
-      "Classic Nike Air Force 1 sneakers with premium leather construction, timeless design, and exceptional comfort for everyday wear.",
+      "Classic Nike Air Force 1 sneakers with premium construction, timeless styling, and reliable comfort for everyday wear.",
   },
   {
     id: 3,
@@ -31,9 +35,9 @@ const products = [
     oldPrice: 2400000,
     rating: 5.0,
     stock: 5,
-    image: "https://images.unsplash.com/photo-1517336714739-489689fd1ca8?w=600",
+    image: macbookImage,
     description:
-      "Apple MacBook Air powered by the M3 chip, delivering incredible speed, battery life, and a lightweight premium design.",
+      "Apple MacBook Air powered by the M3 chip, delivering excellent speed, long battery life, a sharp display, and a lightweight premium design.",
   },
   {
     id: 4,
@@ -43,9 +47,10 @@ const products = [
     oldPrice: 520000,
     rating: 4.9,
     stock: 18,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600",
+    image:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&auto=format&fit=crop",
     description:
-      "Industry-leading noise-cancelling wireless headphones with premium sound quality and exceptional comfort.",
+      "Premium wireless headphones with excellent noise cancellation, rich sound quality, and comfortable all-day wear.",
   },
 ];
 

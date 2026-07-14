@@ -1,43 +1,62 @@
+import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import categories from "../../data/categories";
 
 function Categories() {
   return (
-    <section className="bg-slate-950 py-20">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative overflow-hidden bg-slate-950 py-20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.08),transparent_30rem)]" />
 
-        <h2 className="text-4xl font-bold text-center text-white">
-          Explore Our{" "}
-          <span className="text-emerald-400">Categories</span>
-        </h2>
+      <div className="relative mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.28em] text-orange-400">
+            Shop your way
+          </p>
 
-        <p className="text-gray-400 text-center mt-4 mb-12">
-          Discover premium gadgets, fashion, and accessories handpicked for you.
-        </p>
+          <h2 className="mt-4 text-4xl font-black text-white sm:text-5xl">
+            Explore Our{" "}
+            <span className="brand-gradient-text">
+              Categories
+            </span>
+          </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <p className="mt-5 text-lg leading-8 text-slate-400">
+            Discover premium gadgets, fashion, accessories and lifestyle
+            essentials carefully selected for you.
+          </p>
+        </div>
 
+        <div className="mt-14 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
           {categories.map((category) => {
             const Icon = category.icon;
 
             return (
-              <div
+              <Link
                 key={category.id}
-                className="bg-slate-900 rounded-2xl p-8 flex flex-col items-center cursor-pointer hover:bg-emerald-500 transition-all duration-300 hover:scale-105"
+                to={`/shop?category=${encodeURIComponent(category.name)}`}
+                className="category-card"
               >
-                <Icon
-                  size={42}
-                  className="text-emerald-400 group-hover:text-white"
-                />
+                <div className="category-icon">
+                  <Icon size={32} />
+                </div>
 
-                <h3 className="mt-4 font-semibold text-white">
+                <h3 className="mt-5 font-bold text-white">
                   {category.name}
                 </h3>
-              </div>
+
+                <div className="mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-orange-400">
+                  Shop now
+
+                  <ArrowUpRight
+                    size={15}
+                    className="category-arrow"
+                  />
+                </div>
+              </Link>
             );
           })}
-
         </div>
-
       </div>
     </section>
   );
