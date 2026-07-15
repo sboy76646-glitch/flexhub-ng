@@ -1,21 +1,54 @@
 import { BadgeCheck, BarChart3, PackagePlus, Store } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
-import { BrandName } from "../components/brand/Brand";
 import Layout from "../components/layout/Layout";
 import { useAuth } from "../context/AuthContext";
+import { API_BASE_URL, apiRequest } from "../lib/api";
 
 function Sell() {
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated, token, updateUser, user } = useAuth();
+  const [existingStore, setExistingStore] = useState(null);
+  const [checkingStore, setCheckingStore] = useState(Boolean(isAuthenticated));
+  const hasSellerAccount = Boolean(existingStore) || ["seller_pending", "seller"].includes(user?.role);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", category: "", location: "", description: "" });
 
-  const apiBaseUrl = import.meta.env.PROD
-    ? "https://flexhub-ng.onrender.com"
-    : import.meta.env.VITE_API_URL || "http://localhost:5000";
+  useEffect(() => {
+    if (!isAuthenticated || !token) {
+      setExistingStore(null);
+      setCheckingStore(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    fetch(`${API_BASE_URL}/api/stores/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (response.status === 404) return null;
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Unable to check seller status.");
+        return data.store || null;
+      })
+      .then((store) => {
+        if (!controller.signal.aborted) {
+          setExistingStore(store);
+        }
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") toast.error(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCheckingStore(false);
+      });
+
+    return () => controller.abort();
+  }, [isAuthenticated, token]);
 
   function handleChange(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -26,14 +59,14 @@ function Sell() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/stores/apply`, {
+      const data = await apiRequest("/api/stores/apply", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        token,
         body: JSON.stringify(form),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Unable to submit application.");
       setSubmitted(true);
+      setExistingStore(data.store || { status: "pending", name: form.name });
+      updateUser({ role: "seller_pending" });
       toast.success(data.message);
     } catch (error) {
       toast.error(error instanceof TypeError ? "Unable to reach the server. Please try again." : error.message);
@@ -51,24 +84,24 @@ function Sell() {
 
   return (
     <Layout>
-      <section className="bg-slate-50 py-16">
+      <section className="bg-slate-950 py-16">
         <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <p className="flex flex-wrap items-center gap-1 text-sm font-bold uppercase tracking-[0.22em] text-orange-600"><span>Sell on</span> <BrandName /></p>
-            <h1 className="mt-5 text-5xl font-black leading-tight text-slate-950 sm:text-6xl">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-orange-400">Sell on FlexHub NG</p>
+            <h1 className="mt-5 text-5xl font-black leading-tight text-white sm:text-6xl">
               Give your business a store customers can actually find.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
               Create a focused mini-store, list your products and reach shoppers across Nigeria from one marketplace.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link
-                to={isAuthenticated ? "/sell#apply" : "/register?intent=sell"}
+                to={isAuthenticated ? (hasSellerAccount ? "/seller" : "/sell#apply") : "/register?intent=sell"}
                 className="rounded-xl bg-orange-500 px-6 py-4 font-bold text-white transition hover:bg-orange-600"
               >
-                {isAuthenticated ? "Continue seller setup" : "Create seller account"}
+                {checkingStore ? "Checking seller status…" : hasSellerAccount ? "Open seller workspace" : isAuthenticated ? "Start seller application" : "Create seller account"}
               </Link>
-              <Link to="/stores" className="rounded-xl border border-slate-300 bg-white px-6 py-4 font-bold text-slate-900 transition hover:border-orange-500 hover:text-orange-600">
+              <Link to="/stores" className="rounded-xl border border-slate-700 px-6 py-4 font-bold text-white transition hover:border-orange-500 hover:text-orange-400">
                 See existing stores
               </Link>
             </div>
@@ -77,14 +110,14 @@ function Sell() {
 
           <div className="space-y-4">
             {steps.map(([Icon, title, body], index) => (
-              <div key={title} className="flex gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600">
+              <div key={title} className="flex gap-5 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
                   <Icon size={23} />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Step {index + 1}</p>
-                  <h2 className="mt-1 text-xl font-bold text-slate-950">{title}</h2>
-                  <p className="mt-2 leading-7 text-slate-600">{body}</p>
+                  <h2 className="mt-1 text-xl font-bold text-white">{title}</h2>
+                  <p className="mt-2 leading-7 text-slate-400">{body}</p>
                 </div>
               </div>
             ))}
@@ -92,24 +125,28 @@ function Sell() {
         </div>
       </section>
 
-      {isAuthenticated && (
-        <section className="border-t border-slate-200 bg-white py-16" id="apply">
+      {isAuthenticated && !checkingStore && (
+        <section className="border-t border-slate-200 bg-slate-50 py-16 text-slate-900" id="apply">
           <div className="mx-auto max-w-3xl px-6">
-            {submitted ? (
-              <div className="rounded-3xl border border-green-500/20 bg-green-500/5 p-10 text-center">
+            {hasSellerAccount ? (
+              <div className="rounded-3xl border border-orange-200 bg-white p-10 text-center shadow-sm">
+                <Store className="mx-auto text-orange-500" size={44} />
+                <h2 className="mt-5 text-3xl font-black text-slate-950">Your seller workspace is ready</h2>
+                <p className="mt-3 leading-7 text-slate-600">{existingStore?.status === "approved" ? "Your mini-store is approved. Manage products, orders and payouts from your seller workspace." : "Your seller application already exists. Check its approval status and continue preparing your store from one place."}</p>
+                <Link to="/seller" className="mt-6 inline-flex rounded-xl bg-slate-900 px-5 py-3 font-bold text-white hover:bg-orange-500">Open seller workspace</Link>
+              </div>
+            ) : submitted ? (
+              <div className="rounded-3xl border border-green-200 bg-green-50 p-10 text-center">
                 <BadgeCheck className="mx-auto text-green-400" size={44} />
                 <h2 className="mt-5 text-3xl font-black text-slate-950">Application received</h2>
                 <p className="mt-3 leading-7 text-slate-600">Your store details are now ready for review. The mini-store will only become public after approval.</p>
-                <Link to="/seller/dashboard" className="mt-7 inline-flex rounded-xl bg-orange-500 px-6 py-3.5 font-bold text-white transition hover:bg-orange-600">
-                  Add your first product draft
-                </Link>
               </div>
             ) : (
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-orange-600">Seller application</p>
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-orange-400">Seller application</p>
                 <h2 className="mt-3 text-4xl font-black text-slate-950">Tell us about your business</h2>
                 <p className="mt-4 text-slate-600">Use a real business name and a clear description. You can refine branding and products after approval.</p>
-                <form onSubmit={handleSubmit} className="mt-8 grid gap-5 rounded-3xl border border-slate-200 bg-slate-50 p-6 sm:grid-cols-2 sm:p-8">
+                <form onSubmit={handleSubmit} className="mt-8 grid gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-2 sm:p-8">
                   <label className="grid gap-2 text-sm font-semibold text-slate-700">
                     Store name
                     <input name="name" value={form.name} onChange={handleChange} required maxLength={80} placeholder="e.g. Amaka Home Essentials" className="rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500" />

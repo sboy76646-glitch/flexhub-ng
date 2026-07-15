@@ -6,12 +6,9 @@ import {
   useState,
 } from "react";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "../lib/api";
 
 const AuthContext = createContext(null);
-
-const API_BASE_URL = import.meta.env.PROD
-  ? "https://flexhub-ng.onrender.com"
-  : import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const API_URL = `${API_BASE_URL}/api/auth`;
 
@@ -152,6 +149,10 @@ export function AuthProvider({ children }) {
     toast.success("Logged out successfully.");
   }
 
+  function updateUser(changes) {
+    setUser((current) => (current ? { ...current, ...changes } : current));
+  }
+
   const value = {
     user,
     token,
@@ -159,6 +160,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: Boolean(user && token),
   };
 

@@ -76,7 +76,7 @@ function ProductCard({ product }) {
               ? "Remove from wishlist"
               : "Add to wishlist"
           }
-          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-slate-950/90 text-white backdrop-blur transition hover:scale-110 hover:bg-white hover:text-red-500"
+          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-sm backdrop-blur transition hover:scale-110 hover:text-red-500"
         >
           <Heart
             size={21}
@@ -100,11 +100,11 @@ function ProductCard({ product }) {
       <div className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-orange-600">{product.category}</p>
+            <p className="text-sm font-semibold text-orange-400">{product.category}</p>
 
-            <Link to={`/stores/${product.storeId}`} className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-orange-600">
+            <Link to={`/stores/${product.storeId}`} className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-950">
               {product.storeName}
-              {product.sellerVerified && <BadgeCheck size={15} className="text-orange-600" />}
+              {product.sellerVerified && <BadgeCheck size={15} className="text-orange-400" />}
             </Link>
 
             <Link to={`/product/${product.id}`}>
@@ -114,7 +114,7 @@ function ProductCard({ product }) {
             </Link>
           </div>
 
-          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.stock > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.stock > 0 ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
             {product.stock > 0 ? "In stock" : "Sold out"}
           </span>
         </div>
@@ -123,20 +123,20 @@ function ProductCard({ product }) {
           <div className="flex items-center gap-1">
             <Star
               size={17}
-              className="fill-yellow-400 text-yellow-400"
+              className={product.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}
             />
 
             <span className="font-semibold text-slate-900">
-              {product.rating}
+              {product.rating || "New"}
             </span>
           </div>
 
-          <span className="text-slate-600">•</span>
+          <span className="text-slate-300">•</span>
 
-          <div className="flex items-center gap-1 text-sm text-slate-600">
+          <div className="flex items-center gap-1 text-sm text-slate-500">
             <Truck
               size={16}
-              className="text-orange-600"
+              className="text-orange-400"
             />
 
             {product.deliveryEstimate}
@@ -149,7 +149,7 @@ function ProductCard({ product }) {
           </span>
 
           <span
-            className={`mt-2 block text-slate-500 line-through ${
+            className={`mt-2 block text-slate-400 line-through ${
               product.oldPrice ? "visible" : "invisible"
             }`}
           >

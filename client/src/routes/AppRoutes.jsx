@@ -14,11 +14,15 @@ const Stores = lazy(() => import("../pages/Stores"));
 const Storefront = lazy(() => import("../pages/Storefront"));
 const Sell = lazy(() => import("../pages/Sell"));
 const SellerDashboard = lazy(() => import("../pages/SellerDashboard"));
+const AdminStores = lazy(() => import("../pages/AdminStores"));
+const AdminMarketplace = lazy(() => import("../pages/AdminMarketplace"));
+const PaymentCallback = lazy(() => import("../pages/PaymentCallback"));
+const MyOrders = lazy(() => import("../pages/MyOrders"));
 
 function PageLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50" role="status">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
+    <div className="flex min-h-screen items-center justify-center bg-slate-950" role="status">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-orange-500" />
       <span className="sr-only">Loading page</span>
     </div>
   );
@@ -40,7 +44,11 @@ function AppRoutes() {
         <Route path="/stores" element={<Stores />} />
         <Route path="/stores/:storeId" element={<Storefront />} />
         <Route path="/sell" element={<Sell />} />
-        <Route path="/seller/dashboard" element={<SellerDashboard />} />
+        <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/admin/stores" element={<AdminStores />} />
+        <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+        <Route path="/payment/callback" element={<PaymentCallback />} />
+        <Route path="/orders" element={<MyOrders />} />
       </Routes>
     </Suspense>
   );

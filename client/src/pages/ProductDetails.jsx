@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeCheck, MapPin, Store } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import products from "../data/products";
 import { useCart } from "../context/CartContext";
+import { apiRequest } from "../lib/api";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -12,16 +13,41 @@ function ProductDetails() {
 
   const { addToCart } = useCart();
 
-  const product = products.find(
+  const sampleProduct = products.find(
     (item) => item.id === Number(id)
   );
-
+  const [product, setProduct] = useState(sampleProduct || null);
+  const [loading, setLoading] = useState(!sampleProduct);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    if (sampleProduct) return undefined;
+    let cancelled = false;
+
+    apiRequest(`/api/products/${id}`)
+      .then((data) => {
+        if (!cancelled) setProduct(data.product);
+      })
+      .catch(() => {
+        if (!cancelled) setProduct(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, sampleProduct]);
+
+  if (loading) {
+    return <Layout><div className="flex min-h-[70vh] items-center justify-center bg-slate-50 text-slate-500">Loading product…</div></Layout>;
+  }
 
   if (!product) {
     return (
       <Layout>
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 text-3xl text-slate-950">
+        <div className="min-h-screen flex justify-center items-center text-white text-3xl">
           Product Not Found
         </div>
       </Layout>
@@ -40,7 +66,7 @@ function ProductDetails() {
   return (
     <Layout>
 
-      <section className="min-h-screen bg-slate-50 py-16">
+      <section className="min-h-screen bg-slate-50 py-16 text-slate-900">
 
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
 
@@ -75,11 +101,11 @@ function ProductDetails() {
 
             <div className="flex items-center gap-3 mt-5">
 
-              <span className="text-yellow-400 text-xl">
-                ⭐ {product.rating}
+              <span className="text-yellow-500 text-xl">
+                {product.rating ? `⭐ ${product.rating}` : "New listing"}
               </span>
 
-              <span className={product.stock > 0 ? "text-green-700" : "text-red-700"}>
+              <span className={product.stock > 0 ? "text-green-400" : "text-red-400"}>
                 {product.stock > 0 ? `${product.stock} in stock` : "Sold out"}
               </span>
 
@@ -91,9 +117,7 @@ function ProductDetails() {
                 ₦{product.price.toLocaleString()}
               </h2>
 
-              <h3 className="text-2xl line-through text-gray-500">
-                ₦{product.oldPrice.toLocaleString()}
-              </h3>
+              {product.oldPrice && <h3 className="text-2xl line-through text-gray-500">₦{product.oldPrice.toLocaleString()}</h3>}
 
             </div>
 
@@ -103,20 +127,20 @@ function ProductDetails() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sold by</p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
                 <Link to={`/stores/${product.storeId}`} className="flex items-center gap-2 font-bold text-slate-950 hover:text-orange-600">
-                  <Store size={19} className="text-orange-600" />
+                  <Store size={19} className="text-orange-400" />
                   {product.storeName}
-                  {product.sellerVerified && <BadgeCheck size={18} className="text-orange-600" />}
+                  {product.sellerVerified && <BadgeCheck size={18} className="text-orange-400" />}
                 </Link>
-                <span className="flex items-center gap-2 text-sm text-slate-600"><MapPin size={16} /> Nigeria</span>
+                <span className="flex items-center gap-2 text-sm text-slate-500"><MapPin size={16} /> Nigeria</span>
               </div>
-              <p className="mt-3 text-sm text-slate-600">Estimated delivery: {product.deliveryEstimate}</p>
+              <p className="mt-3 text-sm text-slate-500">Estimated delivery: {product.deliveryEstimate}</p>
             </div>
 
             {/* Quantity */}
 
             <div className="mt-10">
 
-              <h3 className="mb-3 font-semibold text-slate-950">
+              <h3 className="mb-3 font-semibold text-slate-900">
                 Quantity
               </h3>
 
@@ -127,12 +151,12 @@ function ProductDetails() {
                     quantity > 1 &&
                     setQuantity(quantity - 1)
                   }
-                  className="h-12 w-12 rounded-xl bg-slate-100 text-xl text-slate-950 hover:bg-slate-200"
+                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900"
                 >
                   -
                 </button>
 
-                <span className="text-2xl text-slate-950">
+                <span className="text-2xl text-slate-900">
                   {quantity}
                 </span>
 
@@ -140,7 +164,7 @@ function ProductDetails() {
                   onClick={() =>
                     setQuantity(Math.min(quantity + 1, product.stock))
                   }
-                  className="h-12 w-12 rounded-xl bg-slate-100 text-xl text-slate-950 hover:bg-slate-200"
+                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900"
                 >
                   +
                 </button>
@@ -161,7 +185,7 @@ function ProductDetails() {
                 Add To Cart
               </button>
 
-              <button onClick={buyNow} disabled={product.stock < 1} className="rounded-xl bg-slate-950 px-8 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300">
+              <button onClick={buyNow} disabled={product.stock < 1} className="rounded-xl bg-slate-900 px-8 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:text-slate-500">
                 Buy Now
               </button>
 
@@ -171,19 +195,19 @@ function ProductDetails() {
 
             <div className="grid grid-cols-2 gap-6 mt-14">
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 🚚 Delivery estimate shown
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 🔒 Secure Payments
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 🏪 Identified seller
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 💬 Seller support
               </div>
 

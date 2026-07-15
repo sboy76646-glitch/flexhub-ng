@@ -9,12 +9,11 @@ import {
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
-
-import { BrandLogo, BrandName } from "../brand/Brand";
+import { BrandLogo } from "../brand/Brand";
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-800 bg-slate-950">
+    <footer className="mt-20 border-t border-slate-800 bg-slate-950">
 
       {/* Trust features */}
       <div className="border-b border-slate-800">
@@ -108,8 +107,8 @@ function Footer() {
             </li>
 
             <li>
-              <Link to="/sell" className="inline-flex items-center gap-1 hover:text-orange-400">
-                <span>Sell on</span> <BrandName />
+              <Link to="/sell" className="hover:text-orange-400">
+                Sell on FlexHub NG
               </Link>
             </li>
 
@@ -272,8 +271,8 @@ function Footer() {
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 md:flex-row">
 
-          <p className="flex flex-wrap items-center justify-center gap-1 text-sm text-slate-500">
-            <span>© 2026</span> <BrandName /> <span>All rights reserved.</span>
+          <p className="text-sm text-slate-500">
+            © 2026 FlexHub NG. All rights reserved.
           </p>
 
           <p className="text-sm text-slate-500">

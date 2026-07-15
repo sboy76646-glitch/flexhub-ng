@@ -4,7 +4,7 @@ function ProductGrid({ products }) {
   if (products.length === 0) {
     return (
       <div className="text-center py-16">
-        <h2 className="text-2xl text-slate-600">
+        <h2 className="text-2xl text-gray-400">
           No products found.
         </h2>
       </div>
@@ -23,4 +23,4 @@ function ProductGrid({ products }) {
   );
 }
 
-export default ProductGrid;
+export default ProductGrid; 

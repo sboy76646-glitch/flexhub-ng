@@ -21,11 +21,11 @@ const points = [
 
 function MarketplaceIntro() {
   return (
-    <section className="border-y border-slate-200 bg-white py-16">
+    <section className="border-y border-slate-200 bg-white py-16 text-slate-900">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-orange-600">
+            <p className="text-sm font-bold uppercase tracking-[0.22em] text-orange-400">
               One marketplace, many businesses
             </p>
             <h2 className="mt-3 max-w-3xl text-3xl font-black text-slate-950 sm:text-4xl">

@@ -1,5 +1,5 @@
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "l4mrjyfd";
-const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "flexhub_products";
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 export const PRODUCT_IMAGE_RULES = {
   maxBytes: 5 * 1024 * 1024,
@@ -8,7 +8,9 @@ export const PRODUCT_IMAGE_RULES = {
 };
 
 export function validateProductImage(file) {
-  if (!file) return "Choose a product image.";
+  if (!file) {
+    return "Choose a product image.";
+  }
 
   if (!PRODUCT_IMAGE_RULES.acceptedTypes.includes(file.type)) {
     return "Use a JPG, PNG or WebP image.";
@@ -21,22 +23,68 @@ export function validateProductImage(file) {
   return "";
 }
 
+function validateCloudinaryConfig() {
+  if (!CLOUD_NAME) {
+    throw new Error(
+      "VITE_CLOUDINARY_CLOUD_NAME is missing from client/.env."
+    );
+  }
+
+  if (!UPLOAD_PRESET) {
+    throw new Error(
+      "VITE_CLOUDINARY_UPLOAD_PRESET is missing from client/.env."
+    );
+  }
+}
+
 export async function uploadProductImage(file) {
+  validateCloudinaryConfig();
+
   const validationError = validateProductImage(file);
-  if (validationError) throw new Error(validationError);
 
-  const body = new FormData();
-  body.append("file", file);
-  body.append("upload_preset", UPLOAD_PRESET);
+  if (validationError) {
+    throw new Error(validationError);
+  }
 
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    { method: "POST", body }
-  );
-  const data = await response.json();
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const uploadUrl =
+    `https://api.cloudinary.com/v1_1/${encodeURIComponent(CLOUD_NAME)}/image/upload`;
+
+  let response;
+
+  try {
+    response = await fetch(uploadUrl, {
+      method: "POST",
+      body: formData,
+    });
+  } catch {
+    throw new Error(
+      "Unable to reach Cloudinary. Check your internet connection and try again."
+    );
+  }
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Cloudinary returned an invalid response.");
+  }
 
   if (!response.ok) {
-    throw new Error(data.error?.message || "Image upload failed. Please try again.");
+    const cloudinaryMessage =
+      data?.error?.message ||
+      `Cloudinary upload failed with status ${response.status}.`;
+
+    throw new Error(cloudinaryMessage);
+  }
+
+  if (!data.secure_url || !data.public_id) {
+    throw new Error("Cloudinary did not return complete image details.");
   }
 
   return {
@@ -47,4 +95,4 @@ export async function uploadProductImage(file) {
     format: data.format,
     bytes: data.bytes,
   };
-}
+} 

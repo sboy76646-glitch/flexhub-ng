@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Store from "../models/Store.js";
 
 export async function requireAuth(req, res, next) {
   try {
@@ -22,4 +23,33 @@ export async function requireAuth(req, res, next) {
   } catch {
     return res.status(401).json({ success: false, message: "Your session is invalid or has expired." });
   }
+}
+
+export function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ success: false, message: "Admin access is required." });
+  }
+
+  return next();
+}
+
+export async function requireApprovedSeller(req, res, next) {
+  if (!["seller", "admin"].includes(req.user?.role)) {
+    return res.status(403).json({
+      success: false,
+      message: "An approved seller account is required.",
+    });
+  }
+
+  const store = await Store.findOne({ owner: req.user._id, status: "approved" });
+
+  if (!store) {
+    return res.status(403).json({
+      success: false,
+      message: "Your mini-store must be approved before you can use seller tools.",
+    });
+  }
+
+  req.store = store;
+  return next();
 }

@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -100,10 +101,10 @@ export function CartProvider({ children }) {
     );
   }
 
-  function clearCart() {
+  const clearCart = useCallback((showToast = true) => {
     setCartItems([]);
-    toast.success("Cart cleared");
-  }
+    if (showToast) toast.success("Cart cleared");
+  }, []);
 
   const cartCount = cartItems.reduce(
     (total, item) => total + item.quantity,

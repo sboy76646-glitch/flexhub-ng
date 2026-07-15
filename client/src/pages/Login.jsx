@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { BrandLogo, BrandName } from "../components/brand/Brand";
 import Layout from "../components/layout/Layout";
+import { BrandLogo } from "../components/brand/Brand";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
@@ -51,25 +51,25 @@ function Login() {
 
   return (
     <Layout>
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-6 py-20">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-6 py-20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.15),transparent_30rem)]" />
 
-        <div className="relative w-full max-w-md rounded-[2rem] border border-slate-200 bg-white/95 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur sm:p-10">
+        <div className="relative w-full max-w-md rounded-[2rem] border border-slate-800 bg-slate-900/95 p-8 shadow-2xl shadow-orange-500/10 backdrop-blur sm:p-10">
 
           <div className="mb-10 text-center">
             <Link
               to="/"
               className="mb-6 inline-flex items-center gap-3"
             >
-              <BrandLogo markClassName="h-16 w-16" textClassName="inline-flex text-2xl" theme="light" />
+              <BrandLogo markClassName="h-16 w-16" textClassName="inline-flex text-2xl" />
             </Link>
 
-            <h1 className="text-4xl font-black text-slate-950">
+            <h1 className="text-4xl font-black text-white">
               Welcome Back
             </h1>
 
-            <p className="mt-3 text-slate-600">
-              Sign in to continue shopping on <BrandName />.
+            <p className="mt-3 text-slate-400">
+              Sign in to continue shopping on FlexHub NG.
             </p>
           </div>
 
@@ -78,14 +78,14 @@ function Login() {
             className="space-y-6"
           >
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
+              <label className="mb-2 block text-sm font-semibold text-slate-300">
                 Email Address
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <Mail
                   size={19}
-                  className="shrink-0 text-orange-600"
+                  className="shrink-0 text-orange-400"
                 />
 
                 <input
@@ -96,20 +96,20 @@ function Login() {
                   placeholder="Enter your email"
                   autoComplete="email"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
+              <label className="mb-2 block text-sm font-semibold text-slate-300">
                 Password
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <Lock
                   size={19}
-                  className="shrink-0 text-orange-600"
+                  className="shrink-0 text-orange-400"
                 />
 
                 <input
@@ -120,7 +120,7 @@ function Login() {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
                 />
 
                 <button
@@ -133,7 +133,7 @@ function Login() {
                       ? "Hide password"
                       : "Show password"
                   }
-                  className="text-slate-500 hover:text-orange-600"
+                  className="text-slate-400 hover:text-orange-400"
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -145,7 +145,7 @@ function Login() {
             </div>
 
             <div className="flex items-center justify-between gap-4">
-              <label className="flex items-center gap-2 text-sm text-slate-600">
+              <label className="flex items-center gap-2 text-sm text-slate-400">
                 <input
                   type="checkbox"
                   className="accent-orange-500"
@@ -155,7 +155,7 @@ function Login() {
 
               <button
                 type="button"
-                className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+                className="text-sm font-semibold text-orange-400 hover:text-orange-300"
               >
                 Forgot Password?
               </button>
@@ -175,21 +175,21 @@ function Login() {
             <div className="flex items-start gap-3">
               <ShieldCheck
                 size={20}
-                className="mt-0.5 shrink-0 text-orange-600"
+                className="mt-0.5 shrink-0 text-orange-400"
               />
 
-              <p className="text-sm leading-6 text-slate-600">
+              <p className="text-sm leading-6 text-slate-400">
                 Your login details are securely processed and your
                 password is never stored in plain text.
               </p>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-slate-600">
+          <p className="mt-8 text-center text-slate-400">
             Don&apos;t have an account?{" "}
             <Link
               to="/register"
-              className="font-semibold text-orange-600 hover:text-orange-700"
+              className="font-semibold text-orange-400 hover:text-orange-300"
             >
               Register
             </Link>
