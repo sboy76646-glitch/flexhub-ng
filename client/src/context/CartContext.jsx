@@ -1,6 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -9,7 +11,19 @@ import toast from "react-hot-toast";
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem("flexhub-cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      localStorage.removeItem("flexhub-cart");
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("flexhub-cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   function addToCart(product, quantity = 1) {
     setCartItems((previousItems) => {
@@ -22,7 +36,7 @@ export function CartProvider({ children }) {
           item.id === product.id
             ? {
                 ...item,
-                quantity: item.quantity + quantity,
+                quantity: Math.min(item.quantity + quantity, item.stock || 99),
               }
             : item
         );
@@ -32,7 +46,7 @@ export function CartProvider({ children }) {
         ...previousItems,
         {
           ...product,
-          quantity,
+          quantity: Math.min(quantity, product.stock || quantity),
         },
       ];
     });
@@ -64,7 +78,7 @@ export function CartProvider({ children }) {
         item.id === id
           ? {
               ...item,
-              quantity: item.quantity + 1,
+              quantity: Math.min(item.quantity + 1, item.stock || 99),
             }
           : item
       )
@@ -130,4 +144,4 @@ export function useCart() {
   }
 
   return context;
-} 
+}

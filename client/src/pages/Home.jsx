@@ -1,28 +1,24 @@
-import { useState } from "react";
-
 import Layout from "../components/layout/Layout";
 import HeroBanner from "../components/home/HeroBanner";
 import FlashDeals from "../components/home/FlashDeals";
 import Categories from "../components/home/Categories";
 import FeaturedProducts from "../components/home/FeaturedProducts";
+import MarketplaceIntro from "../components/home/MarketplaceIntro";
 
 function Home() {
-  const [search, setSearch] = useState("");
-
   return (
-    <Layout
-      search={search}
-      setSearch={setSearch}
-    >
+    <Layout>
       <HeroBanner />
+
+      <MarketplaceIntro />
 
       <FlashDeals />
 
       <Categories />
 
-      <FeaturedProducts search={search} />
+      <FeaturedProducts />
     </Layout>
   );
 }
 
-export default Home; 
+export default Home;

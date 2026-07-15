@@ -10,14 +10,16 @@ import {
   User,
   UserPlus,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
+import { BrandLogo, BrandName } from "../components/brand/Brand";
 import Layout from "../components/layout/Layout";
-import logo from "../assets/logo/logo.png";
 import { useAuth } from "../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sellerIntent = searchParams.get("intent") === "sell";
   const { register, loading } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +57,7 @@ function Register() {
     });
 
     if (result.success) {
-      navigate("/");
+      navigate(sellerIntent ? "/sell#apply" : "/");
     }
   }
 
@@ -65,39 +67,26 @@ function Register() {
 
   return (
     <Layout>
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-6 py-20">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-6 py-20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(249,115,22,0.15),transparent_32rem)]" />
 
-        <div className="relative w-full max-w-3xl rounded-[2rem] border border-slate-800 bg-slate-900/95 p-8 shadow-2xl shadow-orange-500/10 backdrop-blur sm:p-10">
+        <div className="relative w-full max-w-3xl rounded-[2rem] border border-slate-200 bg-white/95 p-8 shadow-2xl shadow-slate-900/10 backdrop-blur sm:p-10">
           <div className="mb-10 text-center">
             <Link
               to="/"
               className="mb-6 inline-flex items-center gap-3"
             >
-              <img
-                src={logo}
-                alt="FlexHub NG"
-                className="h-16 w-16 object-contain"
-              />
-
-              <div className="text-left leading-none">
-                <h2 className="text-2xl font-black tracking-tight">
-                  <span className="text-white">FLEX</span>
-                  <span className="text-orange-500">HUB</span>
-                </h2>
-
-                <p className="mt-1 text-[10px] font-semibold tracking-[0.45em] text-slate-400">
-                  NG
-                </p>
-              </div>
+              <BrandLogo markClassName="h-16 w-16" textClassName="inline-flex text-2xl" theme="light" />
             </Link>
 
-            <h1 className="text-4xl font-black text-white">
+            <h1 className="text-4xl font-black text-slate-950">
               Create Your Account
             </h1>
 
-            <p className="mt-3 text-slate-400">
-              Join FlexHub NG and start shopping smarter.
+            <p className="mt-3 text-slate-600">
+              {sellerIntent
+                ? "Create your account, then tell us about your business."
+                : <>Join <BrandName /> and start shopping smarter.</>}
             </p>
           </div>
 
@@ -106,14 +95,14 @@ function Register() {
             className="grid gap-6 md:grid-cols-2"
           >
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 First Name
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <User
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -124,20 +113,20 @@ function Register() {
                   placeholder="First name"
                   autoComplete="given-name"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Last Name
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <User
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -148,20 +137,20 @@ function Register() {
                   placeholder="Last name"
                   autoComplete="family-name"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Email Address
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <Mail
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -172,20 +161,20 @@ function Register() {
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Phone Number
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <Phone
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -196,20 +185,20 @@ function Register() {
                   placeholder="Phone number"
                   autoComplete="tel"
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Password
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-300 bg-slate-50 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
                 <Lock
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -221,7 +210,7 @@ function Register() {
                   autoComplete="new-password"
                   minLength={6}
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
 
                 <button
@@ -232,7 +221,7 @@ function Register() {
                   aria-label={
                     showPassword ? "Hide password" : "Show password"
                   }
-                  className="text-slate-400 hover:text-orange-400"
+                  className="text-slate-500 hover:text-orange-600"
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -244,23 +233,23 @@ function Register() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
                 Confirm Password
               </label>
 
               <div
-                className={`flex items-center rounded-2xl border bg-slate-800 px-4 transition focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)] ${
+                className={`flex items-center rounded-2xl border bg-slate-50 px-4 transition focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)] ${
                   formData.confirmPassword &&
                   formData.password !== formData.confirmPassword
                     ? "border-red-500"
                     : passwordsMatch
                     ? "border-green-500"
-                    : "border-slate-700 focus-within:border-orange-500"
+                    : "border-slate-300 focus-within:border-orange-500"
                 }`}
               >
                 <Lock
                   size={19}
-                  className="shrink-0 text-orange-400"
+                  className="shrink-0 text-orange-600"
                 />
 
                 <input
@@ -272,7 +261,7 @@ function Register() {
                   autoComplete="new-password"
                   minLength={6}
                   required
-                  className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
+                  className="ml-3 w-full bg-transparent py-4 text-slate-900 outline-none placeholder:text-slate-500"
                 />
 
                 <button
@@ -283,7 +272,7 @@ function Register() {
                   aria-label={
                     showConfirm ? "Hide password" : "Show password"
                   }
-                  className="text-slate-400 hover:text-orange-400"
+                  className="text-slate-500 hover:text-orange-600"
                 >
                   {showConfirm ? (
                     <EyeOff size={20} />
@@ -308,7 +297,7 @@ function Register() {
               </div>
             )}
 
-            <label className="md:col-span-2 flex items-start gap-3 text-sm leading-6 text-slate-400">
+            <label className="md:col-span-2 flex items-start gap-3 text-sm leading-6 text-slate-600">
               <input
                 type="checkbox"
                 required
@@ -319,14 +308,14 @@ function Register() {
                 I agree to the{" "}
                 <button
                   type="button"
-                  className="font-semibold text-orange-400 hover:text-orange-300"
+                  className="font-semibold text-orange-600 hover:text-orange-700"
                 >
                   Terms & Conditions
                 </button>{" "}
                 and{" "}
                 <button
                   type="button"
-                  className="font-semibold text-orange-400 hover:text-orange-300"
+                  className="font-semibold text-orange-600 hover:text-orange-700"
                 >
                   Privacy Policy
                 </button>
@@ -351,21 +340,21 @@ function Register() {
             <div className="flex items-start gap-3">
               <ShieldCheck
                 size={20}
-                className="mt-0.5 shrink-0 text-orange-400"
+                className="mt-0.5 shrink-0 text-orange-600"
               />
 
-              <p className="text-sm leading-6 text-slate-400">
+              <p className="text-sm leading-6 text-slate-600">
                 Your account details are securely processed, and your
                 password is protected before it is stored.
               </p>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-slate-400">
+          <p className="mt-8 text-center text-slate-600">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-semibold text-orange-400 hover:text-orange-300"
+              className="font-semibold text-orange-600 hover:text-orange-700"
             >
               Login
             </Link>
@@ -376,4 +365,4 @@ function Register() {
   );
 }
 
-export default Register; 
+export default Register;

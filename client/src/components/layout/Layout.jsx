@@ -1,17 +1,10 @@
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-function Layout({
-  children,
-  search = "",
-  setSearch = () => {},
-}) {
+function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      <Navbar
-        search={search}
-        setSearch={setSearch}
-      />
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <Navbar />
 
       <main className="flex-1">
         {children}
@@ -22,4 +15,4 @@ function Layout({
   );
 }
 
-export default Layout; 
+export default Layout;

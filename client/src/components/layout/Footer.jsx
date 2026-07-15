@@ -10,11 +10,11 @@ import {
 
 import { Link } from "react-router-dom";
 
-import logo from "../../assets/logo/logo.png";
+import { BrandLogo, BrandName } from "../brand/Brand";
 
 function Footer() {
   return (
-    <footer className="mt-20 border-t border-slate-800 bg-slate-950">
+    <footer className="border-t border-slate-800 bg-slate-950">
 
       {/* Trust features */}
       <div className="border-b border-slate-800">
@@ -80,27 +80,12 @@ function Footer() {
             to="/"
             className="inline-flex items-center gap-3"
           >
-            <img
-              src={logo}
-              alt="FlexHub NG"
-              className="h-16 w-16 object-contain"
-            />
-
-            <div className="leading-none">
-              <h2 className="text-2xl font-black tracking-tight">
-                <span className="text-white">FLEX</span>
-                <span className="text-orange-500">HUB</span>
-              </h2>
-
-              <p className="mt-1 text-[10px] font-semibold tracking-[0.45em] text-slate-400">
-                NG
-              </p>
-            </div>
+            <BrandLogo markClassName="h-14 w-14" textClassName="inline-flex text-2xl" />
           </Link>
 
           <p className="mt-6 leading-7 text-slate-400">
-            Nigeria&apos;s online marketplace for gadgets, sneakers,
-            fashion, accessories and electronics.
+            A public marketplace where shoppers discover products and
+            independent Nigerian businesses build their own mini-stores.
           </p>
 
           <div className="mt-6 flex items-center gap-2 text-sm text-orange-400">
@@ -112,10 +97,22 @@ function Footer() {
         {/* Shop */}
         <div>
           <h3 className="mb-5 text-xl font-bold text-white">
-            Shop
+            Marketplace
           </h3>
 
           <ul className="space-y-3 text-slate-400">
+            <li>
+              <Link to="/stores" className="hover:text-orange-400">
+                Browse Mini-stores
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/sell" className="inline-flex items-center gap-1 hover:text-orange-400">
+                <span>Sell on</span> <BrandName />
+              </Link>
+            </li>
+
             <li>
               <Link to="/shop" className="hover:text-orange-400">
                 Smartphones
@@ -275,8 +272,8 @@ function Footer() {
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-6 md:flex-row">
 
-          <p className="text-sm text-slate-500">
-            © 2026 FlexHub NG. All rights reserved.
+          <p className="flex flex-wrap items-center justify-center gap-1 text-sm text-slate-500">
+            <span>© 2026</span> <BrandName /> <span>All rights reserved.</span>
           </p>
 
           <p className="text-sm text-slate-500">
@@ -290,4 +287,4 @@ function Footer() {
   );
 }
 
-export default Footer; 
+export default Footer;

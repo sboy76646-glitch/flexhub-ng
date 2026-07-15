@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { BadgeCheck, MapPin, Store } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import products from "../data/products";
@@ -7,6 +8,7 @@ import { useCart } from "../context/CartContext";
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { addToCart } = useCart();
 
@@ -19,7 +21,7 @@ function ProductDetails() {
   if (!product) {
     return (
       <Layout>
-        <div className="min-h-screen flex justify-center items-center text-white text-3xl">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 text-3xl text-slate-950">
           Product Not Found
         </div>
       </Layout>
@@ -30,10 +32,15 @@ function ProductDetails() {
     addToCart(product, quantity);
   }
 
+  function buyNow() {
+    addToCart(product, quantity);
+    navigate("/checkout");
+  }
+
   return (
     <Layout>
 
-      <section className="bg-slate-950 min-h-screen py-16">
+      <section className="min-h-screen bg-slate-50 py-16">
 
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
 
@@ -41,11 +48,12 @@ function ProductDetails() {
 
           <div>
 
-            <div className="bg-slate-900 rounded-3xl p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
               <img
                 src={product.image}
                 alt={product.name}
+                decoding="async"
                 className="w-full rounded-2xl"
               />
 
@@ -57,11 +65,11 @@ function ProductDetails() {
 
           <div>
 
-            <span className="bg-emerald-500 text-white px-4 py-2 rounded-full">
+            <span className="bg-orange-500 text-white px-4 py-2 rounded-full">
               {product.category}
             </span>
 
-            <h1 className="text-5xl font-bold text-white mt-6">
+            <h1 className="mt-6 text-5xl font-bold text-slate-950">
               {product.name}
             </h1>
 
@@ -71,15 +79,15 @@ function ProductDetails() {
                 ⭐ {product.rating}
               </span>
 
-              <span className="text-green-400">
-                In Stock
+              <span className={product.stock > 0 ? "text-green-700" : "text-red-700"}>
+                {product.stock > 0 ? `${product.stock} in stock` : "Sold out"}
               </span>
 
             </div>
 
             <div className="flex gap-5 items-center mt-8">
 
-              <h2 className="text-5xl font-bold text-emerald-400">
+              <h2 className="text-5xl font-bold text-orange-600">
                 ₦{product.price.toLocaleString()}
               </h2>
 
@@ -89,18 +97,26 @@ function ProductDetails() {
 
             </div>
 
-            <p className="text-gray-300 mt-8 leading-8">
-              Experience premium quality and durability with this
-              product. Carefully selected by FlexHub NG to provide
-              excellent value, fast delivery and guaranteed customer
-              satisfaction.
-            </p>
+            <p className="mt-8 leading-8 text-slate-600">{product.description}</p>
+
+            <div className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sold by</p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                <Link to={`/stores/${product.storeId}`} className="flex items-center gap-2 font-bold text-slate-950 hover:text-orange-600">
+                  <Store size={19} className="text-orange-600" />
+                  {product.storeName}
+                  {product.sellerVerified && <BadgeCheck size={18} className="text-orange-600" />}
+                </Link>
+                <span className="flex items-center gap-2 text-sm text-slate-600"><MapPin size={16} /> Nigeria</span>
+              </div>
+              <p className="mt-3 text-sm text-slate-600">Estimated delivery: {product.deliveryEstimate}</p>
+            </div>
 
             {/* Quantity */}
 
             <div className="mt-10">
 
-              <h3 className="text-white font-semibold mb-3">
+              <h3 className="mb-3 font-semibold text-slate-950">
                 Quantity
               </h3>
 
@@ -111,20 +127,20 @@ function ProductDetails() {
                     quantity > 1 &&
                     setQuantity(quantity - 1)
                   }
-                  className="bg-slate-800 w-12 h-12 rounded-xl text-white text-xl"
+                  className="h-12 w-12 rounded-xl bg-slate-100 text-xl text-slate-950 hover:bg-slate-200"
                 >
                   -
                 </button>
 
-                <span className="text-white text-2xl">
+                <span className="text-2xl text-slate-950">
                   {quantity}
                 </span>
 
                 <button
                   onClick={() =>
-                    setQuantity(quantity + 1)
+                    setQuantity(Math.min(quantity + 1, product.stock))
                   }
-                  className="bg-slate-800 w-12 h-12 rounded-xl text-white text-xl"
+                  className="h-12 w-12 rounded-xl bg-slate-100 text-xl text-slate-950 hover:bg-slate-200"
                 >
                   +
                 </button>
@@ -139,12 +155,13 @@ function ProductDetails() {
 
               <button
                 onClick={addItemToCart}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl text-lg font-bold transition"
+                disabled={product.stock < 1}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl text-lg font-bold transition disabled:cursor-not-allowed disabled:bg-slate-700"
               >
                 Add To Cart
               </button>
 
-              <button className="px-8 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition">
+              <button onClick={buyNow} disabled={product.stock < 1} className="rounded-xl bg-slate-950 px-8 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300">
                 Buy Now
               </button>
 
@@ -154,20 +171,20 @@ function ProductDetails() {
 
             <div className="grid grid-cols-2 gap-6 mt-14">
 
-              <div className="bg-slate-900 rounded-xl p-5">
-                🚚 Fast Nationwide Delivery
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                🚚 Delivery estimate shown
               </div>
 
-              <div className="bg-slate-900 rounded-xl p-5">
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
                 🔒 Secure Payments
               </div>
 
-              <div className="bg-slate-900 rounded-xl p-5">
-                ✅ Quality Guaranteed
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                🏪 Identified seller
               </div>
 
-              <div className="bg-slate-900 rounded-xl p-5">
-                ↩️ 7-Day Returns
+              <div className="rounded-xl border border-slate-200 bg-white p-5">
+                💬 Seller support
               </div>
 
             </div>
@@ -182,4 +199,4 @@ function ProductDetails() {
   );
 }
 
-export default ProductDetails; 
+export default ProductDetails;

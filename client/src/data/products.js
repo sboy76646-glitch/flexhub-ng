@@ -9,6 +9,11 @@ const products = [
     oldPrice: 1100000,
     rating: 4.8,
     stock: 12,
+    storeId: "flexhub-direct",
+    storeName: "FlexHub Direct",
+    sellerVerified: true,
+    deliveryEstimate: "2–5 working days",
+    reviewCount: 42,
     image:
       "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=900&auto=format&fit=crop",
     description:
@@ -22,6 +27,11 @@ const products = [
     oldPrice: 200000,
     rating: 4.9,
     stock: 8,
+    storeId: "sole-district",
+    storeName: "Sole District",
+    sellerVerified: true,
+    deliveryEstimate: "3–6 working days",
+    reviewCount: 31,
     image:
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&auto=format&fit=crop",
     description:
@@ -35,6 +45,11 @@ const products = [
     oldPrice: 2400000,
     rating: 5.0,
     stock: 5,
+    storeId: "flexhub-direct",
+    storeName: "FlexHub Direct",
+    sellerVerified: true,
+    deliveryEstimate: "2–5 working days",
+    reviewCount: 19,
     image: macbookImage,
     description:
       "Apple MacBook Air powered by the M3 chip, delivering excellent speed, long battery life, a sharp display, and a lightweight premium design.",
@@ -47,6 +62,11 @@ const products = [
     oldPrice: 520000,
     rating: 4.9,
     stock: 18,
+    storeId: "sound-space",
+    storeName: "Sound Space",
+    sellerVerified: true,
+    deliveryEstimate: "3–6 working days",
+    reviewCount: 36,
     image:
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900&auto=format&fit=crop",
     description:
@@ -54,4 +74,4 @@ const products = [
   },
 ];
 
-export default products; 
+export default products;

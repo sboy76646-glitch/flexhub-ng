@@ -1,29 +1,49 @@
-import { Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
 
-import Home from "../pages/Home";
-import Shop from "../pages/Shop";
-import Cart from "../pages/Cart";
-import Checkout from "../pages/Checkout";
-import Wishlist from "../pages/Wishlist";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import Profile from "../pages/Profile";
-import ProductDetails from "../pages/ProductDetails";
+const Home = lazy(() => import("../pages/Home"));
+const Shop = lazy(() => import("../pages/Shop"));
+const Cart = lazy(() => import("../pages/Cart"));
+const Checkout = lazy(() => import("../pages/Checkout"));
+const Wishlist = lazy(() => import("../pages/Wishlist"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
+const Profile = lazy(() => import("../pages/Profile"));
+const ProductDetails = lazy(() => import("../pages/ProductDetails"));
+const Stores = lazy(() => import("../pages/Stores"));
+const Storefront = lazy(() => import("../pages/Storefront"));
+const Sell = lazy(() => import("../pages/Sell"));
+const SellerDashboard = lazy(() => import("../pages/SellerDashboard"));
 
-function AppRoutes() {
+function PageLoader() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/shop" element={<Shop />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/wishlist" element={<Wishlist />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/product/:id" element={<ProductDetails />} />
-    </Routes>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50" role="status">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
+      <span className="sr-only">Loading page</span>
+    </div>
   );
 }
 
-export default AppRoutes; 
+function AppRoutes() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/stores" element={<Stores />} />
+        <Route path="/stores/:storeId" element={<Storefront />} />
+        <Route path="/sell" element={<Sell />} />
+        <Route path="/seller/dashboard" element={<SellerDashboard />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+export default AppRoutes;

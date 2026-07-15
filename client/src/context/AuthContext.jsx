@@ -1,8 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import toast from "react-hot-toast";
@@ -152,18 +152,15 @@ export function AuthProvider({ children }) {
     toast.success("Logged out successfully.");
   }
 
-  const value = useMemo(
-    () => ({
-      user,
-      token,
-      loading,
-      login,
-      register,
-      logout,
-      isAuthenticated: Boolean(user && token),
-    }),
-    [user, token, loading]
-  );
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    register,
+    logout,
+    isAuthenticated: Boolean(user && token),
+  };
 
   return (
     <AuthContext.Provider value={value}>
@@ -180,4 +177,4 @@ export function useAuth() {
   }
 
   return context;
-} 
+}

@@ -9,13 +9,13 @@
   --brand-primary-hover: #ea580c;
   --brand-accent: #ff9f43;
 
-  --brand-background: #020617;
-  --brand-surface: #0f172a;
-  --brand-card: #111827;
-  --brand-border: #1e293b;
+  --brand-background: #f8fafc;
+  --brand-surface: #ffffff;
+  --brand-card: #ffffff;
+  --brand-border: #e2e8f0;
 
-  --brand-text: #ffffff;
-  --brand-muted: #94a3b8;
+  --brand-text: #0f172a;
+  --brand-muted: #64748b;
 }
 
 /* =========================
@@ -36,7 +36,7 @@ body {
   background:
     radial-gradient(
       circle at top right,
-      rgba(249, 115, 22, 0.07),
+      rgba(249, 115, 22, 0.06),
       transparent 30rem
     ),
     var(--brand-background);
@@ -86,7 +86,7 @@ img {
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -165,11 +165,11 @@ img {
   align-items: center;
   justify-content: center;
 
-  border: 1px solid #334155;
+  border: 1px solid #fed7aa;
   border-radius: 18px;
 
-  background: #020617;
-  color: #fb923c;
+  background: #fff7ed;
+  color: #f97316;
 
   transition:
     transform 300ms ease,
@@ -267,4 +267,4 @@ img {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-} 
+}

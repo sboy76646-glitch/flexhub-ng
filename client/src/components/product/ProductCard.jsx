@@ -51,11 +51,13 @@ function ProductCard({ product }) {
 
   return (
     <article className="product-card">
-      <div className="relative h-64 shrink-0 overflow-hidden bg-slate-950">
+      <div className="relative h-64 shrink-0 overflow-hidden bg-slate-100">
         <Link to={`/product/${product.id}`}>
           <img
             src={product.image}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             className="product-card-image h-full w-full object-cover"
           />
         </Link>
@@ -98,21 +100,23 @@ function ProductCard({ product }) {
       <div className="flex flex-1 flex-col p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-orange-400">
-              {product.category}
-            </p>
+            <p className="text-sm font-semibold text-orange-600">{product.category}</p>
+
+            <Link to={`/stores/${product.storeId}`} className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-orange-600">
+              {product.storeName}
+              {product.sellerVerified && <BadgeCheck size={15} className="text-orange-600" />}
+            </Link>
 
             <Link to={`/product/${product.id}`}>
-              <h3 className="mt-2 min-h-[56px] text-xl font-black leading-7 text-white transition-colors hover:text-orange-400">
+              <h3 className="mt-2 min-h-[56px] text-xl font-black leading-7 text-slate-950 transition-colors hover:text-orange-600">
                 {product.name}
               </h3>
             </Link>
           </div>
 
-          <BadgeCheck
-            size={22}
-            className="shrink-0 text-orange-400"
-          />
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.stock > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+            {product.stock > 0 ? "In stock" : "Sold out"}
+          </span>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -122,25 +126,25 @@ function ProductCard({ product }) {
               className="fill-yellow-400 text-yellow-400"
             />
 
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-slate-900">
               {product.rating}
             </span>
           </div>
 
           <span className="text-slate-600">•</span>
 
-          <div className="flex items-center gap-1 text-sm text-slate-400">
+          <div className="flex items-center gap-1 text-sm text-slate-600">
             <Truck
               size={16}
-              className="text-orange-400"
+              className="text-orange-600"
             />
 
-            Fast delivery
+            {product.deliveryEstimate}
           </div>
         </div>
 
         <div className="mt-6 min-h-[76px]">
-          <span className="block text-3xl font-black text-orange-400">
+          <span className="block text-3xl font-black text-orange-600">
             ₦{product.price.toLocaleString()}
           </span>
 
@@ -159,14 +163,15 @@ function ProductCard({ product }) {
         <button
           type="button"
           onClick={handleAddToCart}
-          className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-600 active:scale-95"
+          disabled={product.stock < 1}
+          className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:shadow-none"
         >
           <ShoppingCart size={19} />
-          Add to Cart
+          {product.stock > 0 ? "Add to Cart" : "Sold out"}
         </button>
       </div>
     </article>
   );
 }
 
-export default ProductCard; 
+export default ProductCard;

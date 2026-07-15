@@ -5,23 +5,23 @@ import categories from "../../data/categories";
 
 function Categories() {
   return (
-    <section className="relative overflow-hidden bg-slate-950 py-20">
+    <section className="relative overflow-hidden bg-slate-50 py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.08),transparent_30rem)]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.28em] text-orange-400">
+          <p className="text-sm font-bold uppercase tracking-[0.28em] text-orange-600">
             Shop your way
           </p>
 
-          <h2 className="mt-4 text-4xl font-black text-white sm:text-5xl">
+          <h2 className="mt-4 text-4xl font-black text-slate-950 sm:text-5xl">
             Explore Our{" "}
             <span className="brand-gradient-text">
               Categories
             </span>
           </h2>
 
-          <p className="mt-5 text-lg leading-8 text-slate-400">
+          <p className="mt-5 text-lg leading-8 text-slate-600">
             Discover premium gadgets, fashion, accessories and lifestyle
             essentials carefully selected for you.
           </p>
@@ -41,11 +41,11 @@ function Categories() {
                   <Icon size={32} />
                 </div>
 
-                <h3 className="mt-5 font-bold text-white">
+                <h3 className="mt-5 font-bold text-slate-950">
                   {category.name}
                 </h3>
 
-                <div className="mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-orange-400">
+                <div className="mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-orange-600">
                   Shop now
 
                   <ArrowUpRight
@@ -62,4 +62,4 @@ function Categories() {
   );
 }
 
-export default Categories; 
+export default Categories;

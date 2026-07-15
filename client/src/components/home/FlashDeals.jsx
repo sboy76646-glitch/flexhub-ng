@@ -24,14 +24,14 @@ function FlashDeals() {
   });
 
   return (
-    <section className="relative overflow-hidden border-y border-slate-800 bg-slate-900 py-20">
+    <section className="relative overflow-hidden border-y border-slate-200 bg-white py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.1),transparent_28rem)]" />
 
       <div className="relative mx-auto max-w-7xl px-6">
 
         <div className="mb-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-orange-400">
+            <div className="flex items-center gap-2 text-orange-600">
               <Flame size={22} />
 
               <span className="text-sm font-bold uppercase tracking-[0.22em]">
@@ -39,11 +39,11 @@ function FlashDeals() {
               </span>
             </div>
 
-            <h2 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+            <h2 className="mt-3 text-4xl font-black text-slate-950 sm:text-5xl">
               Flash Deals
             </h2>
 
-            <p className="mt-3 max-w-2xl text-slate-400">
+            <p className="mt-3 max-w-2xl text-slate-600">
               Grab selected products at discounted prices before the
               offers expire.
             </p>
@@ -51,7 +51,7 @@ function FlashDeals() {
 
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 font-bold text-orange-400 hover:text-orange-300"
+            className="inline-flex items-center gap-2 font-bold text-orange-600 hover:text-orange-700"
           >
             View All Deals
             <ArrowRight size={18} />
@@ -62,7 +62,7 @@ function FlashDeals() {
           {deals.map((deal) => (
             <article
               key={deal.id}
-              className="group overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 shadow-xl transition hover:-translate-y-2 hover:border-orange-500/40 hover:shadow-orange-500/10"
+              className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm transition hover:-translate-y-2 hover:border-orange-300 hover:shadow-xl hover:shadow-orange-500/10"
             >
               <div className="relative overflow-hidden">
                 <Link to={`/product/${deal.id}`}>
@@ -86,18 +86,18 @@ function FlashDeals() {
               </div>
 
               <div className="p-6">
-                <p className="text-sm font-semibold text-orange-400">
+                <p className="text-sm font-semibold text-orange-600">
                   {deal.category}
                 </p>
 
                 <Link to={`/product/${deal.id}`}>
-                  <h3 className="mt-2 text-2xl font-black text-white transition hover:text-orange-400">
+                  <h3 className="mt-2 text-2xl font-black text-slate-950 transition hover:text-orange-600">
                     {deal.name}
                   </h3>
                 </Link>
 
                 <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <span className="text-3xl font-black text-orange-400">
+                  <span className="text-3xl font-black text-orange-600">
                     ₦{deal.price.toLocaleString()}
                   </span>
 
@@ -125,4 +125,4 @@ function FlashDeals() {
   );
 }
 
-export default FlashDeals; 
+export default FlashDeals;
