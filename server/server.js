@@ -19,21 +19,24 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://flexhub-ng.netlify.app",
+  "https://flexhub-ng-phi.vercel.app",
+  "https://flexhub-ng-flexhubng.vercel.app",
+  "https://flexhub-ng-git-main-flexhubng.vercel.app",
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests without an origin, such as Postman or direct API tests
+      // Allow requests without an origin, such as Postman and server requests
       if (!origin) {
         return callback(null, true);
       }
 
-      // Allow the main Netlify site and Netlify deploy-preview domains
       const isAllowed =
         allowedOrigins.includes(origin) ||
-        origin.endsWith("--flexhub-ng.netlify.app");
+        origin.endsWith("--flexhub-ng.netlify.app") ||
+        origin.endsWith("-flexhubng.vercel.app");
 
       if (isAllowed) {
         return callback(null, true);
@@ -41,9 +44,7 @@ app.use(
 
       console.log("Blocked CORS origin:", origin);
 
-      return callback(
-        new Error(`CORS blocked this origin: ${origin}`)
-      );
+      return callback(new Error(`CORS blocked this origin: ${origin}`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -74,20 +75,33 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/payouts", payoutRoutes);
 
 app.use((error, req, res, next) => {
-  if (res.headersSent) return next(error);
+  if (res.headersSent) {
+    return next(error);
+  }
+
   console.error("Unhandled API error:", error);
-  return res.status(500).json({ success: false, message: "The server could not complete this request." });
+
+  return res.status(500).json({
+    success: false,
+    message: "The server could not complete this request.",
+  });
 });
 
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  await connectDatabase();
-  startAutomatedPayouts();
+  try {
+    await connectDatabase();
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`✅ Server running on port ${PORT}`);
-  });
+    startAutomatedPayouts();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
 }
 
-startServer();
+startServer(); 
