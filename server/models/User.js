@@ -1,5 +1,37 @@
 import mongoose from "mongoose";
 
+const addressSchema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+    },
+
+    address: {
+      type: String,
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      trim: true,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -25,11 +57,14 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
     },
 
     password: {
       type: String,
       required: true,
+      select: false,
     },
 
     role: {
@@ -49,15 +84,88 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    addresses: [
-      {
-        fullName: String,
-        phone: String,
-        address: String,
-        city: String,
-        state: String,
-      },
-    ],
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationOTP: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    lastOTPRequestAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetOTP: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    passwordResetTokenExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    lastPasswordResetRequestAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+
+    loginAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    lockUntil: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    refreshToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    addresses: [addressSchema],
   },
   {
     timestamps: true,

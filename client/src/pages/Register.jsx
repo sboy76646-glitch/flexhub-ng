@@ -10,7 +10,12 @@ import {
   User,
   UserPlus,
 } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import toast from "react-hot-toast";
 
 import Layout from "../components/layout/Layout";
 import { BrandLogo } from "../components/brand/Brand";
@@ -18,52 +23,102 @@ import { useAuth } from "../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const sellerIntent = searchParams.get("intent") === "sell";
+  const [searchParams] =
+    useSearchParams();
+
+  const sellerIntent =
+    searchParams.get("intent") === "sell";
+
   const { register, loading } = useAuth();
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPassword, setShowPassword] =
+    useState(false);
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [showConfirm, setShowConfirm] =
+    useState(false);
+
+  const [formData, setFormData] =
+    useState({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+    });
 
   function handleChange(event) {
     setFormData((previous) => ({
       ...previous,
-      [event.target.name]: event.target.value,
+      [event.target.name]:
+        event.target.value,
     }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+      toast.error(
+        "Passwords do not match."
+      );
+
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast.error(
+        "Password must contain at least 8 characters."
+      );
+
       return;
     }
 
     const result = await register({
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
+      firstName:
+        formData.firstName.trim(),
+      lastName:
+        formData.lastName.trim(),
       email: formData.email.trim(),
       phone: formData.phone.trim(),
       password: formData.password,
     });
 
-    if (result.success) {
-      navigate(sellerIntent ? "/sell#apply" : "/");
+    if (!result.success) {
+      return;
     }
+
+    if (result.requiresVerification) {
+      const verificationEmail =
+        result.email ||
+        formData.email.trim();
+
+      navigate(
+        `/verify-email?email=${encodeURIComponent(
+          verificationEmail
+        )}`,
+        {
+          replace: true,
+        }
+      );
+
+      return;
+    }
+
+    navigate(
+      sellerIntent
+        ? "/sell#apply"
+        : "/"
+    );
   }
 
   const passwordsMatch =
-    formData.confirmPassword &&
-    formData.password === formData.confirmPassword;
+    Boolean(formData.confirmPassword) &&
+    formData.password ===
+      formData.confirmPassword;
 
   return (
     <Layout>
@@ -76,7 +131,10 @@ function Register() {
               to="/"
               className="mb-6 inline-flex items-center gap-3"
             >
-              <BrandLogo markClassName="h-16 w-16" textClassName="inline-flex text-2xl" />
+              <BrandLogo
+                markClassName="h-16 w-16"
+                textClassName="inline-flex text-2xl"
+              />
             </Link>
 
             <h1 className="text-4xl font-black text-white">
@@ -85,7 +143,7 @@ function Register() {
 
             <p className="mt-3 text-slate-400">
               {sellerIntent
-                ? "Create your account, then tell us about your business."
+                ? "Create your account, verify your email, then tell us about your business."
                 : "Join FlexHub NG and start shopping smarter."}
             </p>
           </div>
@@ -95,20 +153,26 @@ function Register() {
             className="grid gap-6 md:grid-cols-2"
           >
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="firstName"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 First Name
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500">
                 <User
                   size={19}
                   className="shrink-0 text-orange-400"
                 />
 
                 <input
+                  id="firstName"
                   type="text"
                   name="firstName"
-                  value={formData.firstName}
+                  value={
+                    formData.firstName
+                  }
                   onChange={handleChange}
                   placeholder="First name"
                   autoComplete="given-name"
@@ -119,17 +183,21 @@ function Register() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="lastName"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 Last Name
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500">
                 <User
                   size={19}
                   className="shrink-0 text-orange-400"
                 />
 
                 <input
+                  id="lastName"
                   type="text"
                   name="lastName"
                   value={formData.lastName}
@@ -143,17 +211,21 @@ function Register() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 Email Address
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500">
                 <Mail
                   size={19}
                   className="shrink-0 text-orange-400"
                 />
 
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -167,17 +239,21 @@ function Register() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="phone"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 Phone Number
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500">
                 <Phone
                   size={19}
                   className="shrink-0 text-orange-400"
                 />
 
                 <input
+                  id="phone"
                   type="tel"
                   name="phone"
                   value={formData.phone}
@@ -191,24 +267,32 @@ function Register() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 Password
               </label>
 
-              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)]">
+              <div className="flex items-center rounded-2xl border border-slate-700 bg-slate-800 px-4 transition focus-within:border-orange-500">
                 <Lock
                   size={19}
                   className="shrink-0 text-orange-400"
                 />
 
                 <input
-                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Create password"
+                  placeholder="Minimum 8 characters"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={8}
                   required
                   className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
                 />
@@ -216,10 +300,14 @@ function Register() {
                 <button
                   type="button"
                   onClick={() =>
-                    setShowPassword((current) => !current)
+                    setShowPassword(
+                      (current) => !current
+                    )
                   }
                   aria-label={
-                    showPassword ? "Hide password" : "Show password"
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
                   }
                   className="text-slate-400 hover:text-orange-400"
                 >
@@ -233,18 +321,22 @@ function Register() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-300">
+              <label
+                htmlFor="confirmPassword"
+                className="mb-2 block text-sm font-semibold text-slate-300"
+              >
                 Confirm Password
               </label>
 
               <div
-                className={`flex items-center rounded-2xl border bg-slate-800 px-4 transition focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.12)] ${
+                className={`flex items-center rounded-2xl border bg-slate-800 px-4 transition ${
                   formData.confirmPassword &&
-                  formData.password !== formData.confirmPassword
+                  formData.password !==
+                    formData.confirmPassword
                     ? "border-red-500"
                     : passwordsMatch
-                    ? "border-green-500"
-                    : "border-slate-700 focus-within:border-orange-500"
+                      ? "border-green-500"
+                      : "border-slate-700 focus-within:border-orange-500"
                 }`}
               >
                 <Lock
@@ -253,13 +345,20 @@ function Register() {
                 />
 
                 <input
-                  type={showConfirm ? "text" : "password"}
+                  id="confirmPassword"
+                  type={
+                    showConfirm
+                      ? "text"
+                      : "password"
+                  }
                   name="confirmPassword"
-                  value={formData.confirmPassword}
+                  value={
+                    formData.confirmPassword
+                  }
                   onChange={handleChange}
                   placeholder="Confirm password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={8}
                   required
                   className="ml-3 w-full bg-transparent py-4 text-white outline-none placeholder:text-slate-500"
                 />
@@ -267,10 +366,14 @@ function Register() {
                 <button
                   type="button"
                   onClick={() =>
-                    setShowConfirm((current) => !current)
+                    setShowConfirm(
+                      (current) => !current
+                    )
                   }
                   aria-label={
-                    showConfirm ? "Hide password" : "Show password"
+                    showConfirm
+                      ? "Hide password"
+                      : "Show password"
                   }
                   className="text-slate-400 hover:text-orange-400"
                 >
@@ -284,7 +387,8 @@ function Register() {
             </div>
 
             {formData.confirmPassword &&
-              formData.password !== formData.confirmPassword && (
+              formData.password !==
+                formData.confirmPassword && (
                 <p className="md:col-span-2 text-sm font-semibold text-red-400">
                   Passwords do not match.
                 </p>
@@ -305,21 +409,9 @@ function Register() {
               />
 
               <span>
-                I agree to the{" "}
-                <button
-                  type="button"
-                  className="font-semibold text-orange-400 hover:text-orange-300"
-                >
-                  Terms & Conditions
-                </button>{" "}
-                and{" "}
-                <button
-                  type="button"
-                  className="font-semibold text-orange-400 hover:text-orange-300"
-                >
-                  Privacy Policy
-                </button>
-                .
+                I agree to the Terms &
+                Conditions and Privacy
+                Policy.
               </span>
             </label>
 
@@ -327,12 +419,16 @@ function Register() {
               type="submit"
               disabled={
                 loading ||
-                formData.password !== formData.confirmPassword
+                formData.password !==
+                  formData.confirmPassword
               }
               className="md:col-span-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-4 text-lg font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:shadow-none"
             >
               <UserPlus size={20} />
-              {loading ? "Creating account..." : "Create Account"}
+
+              {loading
+                ? "Creating account..."
+                : "Create Account"}
             </button>
           </form>
 
@@ -344,8 +440,10 @@ function Register() {
               />
 
               <p className="text-sm leading-6 text-slate-400">
-                Your account details are securely processed, and your
-                password is protected before it is stored.
+                A six-digit verification
+                code will be sent to your
+                email before your account
+                becomes active.
               </p>
             </div>
           </div>
@@ -365,4 +463,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Register; 
