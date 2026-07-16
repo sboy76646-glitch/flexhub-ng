@@ -6,20 +6,25 @@ import FlashDeals from "../components/home/FlashDeals";
 import Categories from "../components/home/Categories";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import MarketplaceIntro from "../components/home/MarketplaceIntro";
-import sampleProducts from "../data/products";
 import { apiRequest } from "../lib/api";
 
 function Home() {
-  const [marketplaceProducts, setMarketplaceProducts] = useState(sampleProducts);
+  const [marketplaceProducts, setMarketplaceProducts] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
 
     apiRequest("/api/products")
       .then((data) => {
-        if (!cancelled) setMarketplaceProducts(data.products);
+        if (!cancelled) {
+          setMarketplaceProducts(data.products || []);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) {
+          setMarketplaceProducts([]);
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -32,7 +37,9 @@ function Home() {
 
       <MarketplaceIntro />
 
-      <FlashDeals products={marketplaceProducts} />
+      {marketplaceProducts.length > 0 && (
+        <FlashDeals products={marketplaceProducts} />
+      )}
 
       <Categories />
 
@@ -41,4 +48,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Home; 

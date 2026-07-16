@@ -34,7 +34,13 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["customer", "seller_pending", "seller", "admin"],
+      enum: [
+        "customer",
+        "seller_pending",
+        "seller",
+        "seller_suspended",
+        "admin",
+      ],
       default: "customer",
     },
 
@@ -58,4 +64,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema); 

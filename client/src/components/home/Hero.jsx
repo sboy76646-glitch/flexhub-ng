@@ -1,27 +1,41 @@
 function Hero() {
   return (
-    <section className="flex flex-col items-center justify-center text-center px-6 py-24">
-      <h2 className="text-6xl font-extrabold leading-tight">
-        Shop Smart.
-        <br />
-        Shop FlexHub.
-      </h2>
+    <>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 scale-[1.04] bg-cover bg-center motion-safe:animate-[hero-pan_18s_ease-in-out_infinite_alternate]"
+        style={{
+          backgroundImage: "url('/hero-marketplace.jpg')",
+        }}
+      />
 
-      <p className="mt-6 max-w-2xl text-xl text-gray-400">
-        Premium gadgets, sneakers, fashion and accessories delivered across
-        Nigeria.
-      </p>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/45"
+      />
 
-      <div className="mt-10 flex gap-5">
-        <button className="rounded-xl bg-emerald-500 px-8 py-4 font-semibold hover:bg-emerald-600 transition">
-          Shop Now
-        </button>
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_76%_38%,rgba(249,115,22,0.18),transparent_28rem)]"
+      />
 
-        <button className="rounded-xl border border-white px-8 py-4 hover:bg-white hover:text-black transition">
-          Explore
-        </button>
-      </div>
-    </section>
+      <div
+        aria-hidden="true"
+        className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl motion-safe:animate-pulse"
+      />
+
+      <style>{`
+        @keyframes hero-pan {
+          0% {
+            transform: scale(1.04) translate3d(0, 0, 0);
+          }
+
+          100% {
+            transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+          }
+        }
+      `}</style>
+    </>
   );
 }
 

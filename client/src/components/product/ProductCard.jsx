@@ -21,14 +21,13 @@ function ProductCard({ product }) {
   } = useWishlist();
 
   const liked = isInWishlist(product.id);
+  const price = Number(product.price || 0);
+  const oldPrice = Number(product.oldPrice || 0);
+  const stock = Number(product.stock || 0);
 
   const discount =
-    product.oldPrice && product.oldPrice > product.price
-      ? Math.round(
-          ((product.oldPrice - product.price) /
-            product.oldPrice) *
-            100
-        )
+    oldPrice > price && price > 0
+      ? Math.round(((oldPrice - price) / oldPrice) * 100)
       : 0;
 
   function toggleWishlist(event) {
@@ -50,8 +49,8 @@ function ProductCard({ product }) {
   }
 
   return (
-    <article className="product-card">
-      <div className="relative h-64 shrink-0 overflow-hidden bg-slate-100">
+    <article className="product-card overflow-hidden">
+      <div className="relative h-36 shrink-0 overflow-hidden bg-slate-100 sm:h-40">
         <Link to={`/product/${product.id}`}>
           <img
             src={product.image}
@@ -63,7 +62,7 @@ function ProductCard({ product }) {
         </Link>
 
         {discount > 0 && (
-          <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1.5 text-sm font-black text-white shadow-lg">
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-orange-500 px-2 py-1 text-[11px] font-black text-white shadow-md">
             -{discount}%
           </span>
         )}
@@ -76,10 +75,10 @@ function ProductCard({ product }) {
               ? "Remove from wishlist"
               : "Add to wishlist"
           }
-          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-sm backdrop-blur transition hover:scale-110 hover:text-red-500"
+          className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-sm backdrop-blur transition hover:scale-105 hover:text-red-500"
         >
           <Heart
-            size={21}
+            size={18}
             className={
               liked
                 ? "fill-red-500 text-red-500"
@@ -90,40 +89,60 @@ function ProductCard({ product }) {
 
         <Link
           to={`/product/${product.id}`}
-          className="product-quick-view absolute bottom-4 left-1/2 flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-950 shadow-lg"
+          className="product-quick-view absolute bottom-2.5 left-1/2 flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-slate-950 shadow-md"
         >
-          <Eye size={17} />
+          <Eye size={15} />
           Quick View
         </Link>
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-orange-400">{product.category}</p>
+      <div className="flex flex-1 flex-col p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[11px] font-semibold text-orange-500">
+              {product.category}
+            </p>
 
-            <Link to={`/stores/${product.storeId}`} className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-950">
-              {product.storeName}
-              {product.sellerVerified && <BadgeCheck size={15} className="text-orange-400" />}
+            <Link
+              to={`/stores/${product.storeId}`}
+              className="mt-1 inline-flex max-w-full items-center gap-1 text-[11px] text-slate-500 hover:text-slate-950"
+            >
+              <span className="truncate">{product.storeName}</span>
+              {product.sellerVerified && (
+                <BadgeCheck
+                  size={13}
+                  className="shrink-0 text-orange-400"
+                />
+              )}
             </Link>
 
             <Link to={`/product/${product.id}`}>
-              <h3 className="mt-2 min-h-[56px] text-xl font-black leading-7 text-slate-950 transition-colors hover:text-orange-600">
+              <h3 className="mt-1 min-h-[36px] line-clamp-2 text-sm font-black leading-[18px] text-slate-950 transition-colors hover:text-orange-600">
                 {product.name}
               </h3>
             </Link>
           </div>
 
-          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${product.stock > 0 ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
-            {product.stock > 0 ? "In stock" : "Sold out"}
+          <span
+            className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${
+              stock > 0
+                ? "bg-green-500/10 text-green-600"
+                : "bg-red-500/10 text-red-500"
+            }`}
+          >
+            {stock > 0 ? "In stock" : "Sold out"}
           </span>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-1 text-xs">
           <div className="flex items-center gap-1">
             <Star
-              size={17}
-              className={product.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}
+              size={14}
+              className={
+                product.rating
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "text-slate-300"
+              }
             />
 
             <span className="font-semibold text-slate-900">
@@ -133,45 +152,43 @@ function ProductCard({ product }) {
 
           <span className="text-slate-300">•</span>
 
-          <div className="flex items-center gap-1 text-sm text-slate-500">
+          <div className="flex min-w-0 items-center gap-1 text-[11px] text-slate-500">
             <Truck
-              size={16}
-              className="text-orange-400"
+              size={14}
+              className="shrink-0 text-orange-400"
             />
-
-            {product.deliveryEstimate}
+            <span className="truncate">
+              {product.deliveryEstimate}
+            </span>
           </div>
         </div>
 
-        <div className="mt-6 min-h-[76px]">
-          <span className="block text-3xl font-black text-orange-600">
-            ₦{product.price.toLocaleString()}
+        <div className="mt-3 min-h-[48px]">
+          <span className="block text-xl font-black text-orange-600">
+            ₦{price.toLocaleString()}
           </span>
 
           <span
-            className={`mt-2 block text-slate-400 line-through ${
-              product.oldPrice ? "visible" : "invisible"
+            className={`mt-1 block text-xs text-slate-400 line-through ${
+              oldPrice > 0 ? "visible" : "invisible"
             }`}
           >
-            ₦
-            {product.oldPrice
-              ? product.oldPrice.toLocaleString()
-              : "0"}
+            ₦{oldPrice > 0 ? oldPrice.toLocaleString() : "0"}
           </span>
         </div>
 
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.stock < 1}
-          className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 hover:bg-orange-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:shadow-none"
+          disabled={stock < 1}
+          className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-lg bg-orange-500 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-orange-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          <ShoppingCart size={19} />
-          {product.stock > 0 ? "Add to Cart" : "Sold out"}
+          <ShoppingCart size={16} />
+          {stock > 0 ? "Add to Cart" : "Sold out"}
         </button>
       </div>
     </article>
   );
 }
 
-export default ProductCard;
+export default ProductCard; 

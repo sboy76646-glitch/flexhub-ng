@@ -4,52 +4,76 @@ import { Link, useParams } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import ProductGrid from "../components/product/ProductGrid";
-import products from "../data/products";
-import stores from "../data/stores";
 import { apiRequest } from "../lib/api";
 
 function Storefront() {
   const { storeId } = useParams();
-  const sampleStore = stores.find((item) => item.id === storeId) || null;
-  const [store, setStore] = useState(sampleStore);
-  const [storeProducts, setStoreProducts] = useState(() => products.filter((product) => product.storeId === storeId));
-  const [loading, setLoading] = useState(!sampleStore);
+  const [store, setStore] = useState(null);
+  const [storeProducts, setStoreProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (sampleStore) return undefined;
     let cancelled = false;
+
+    setLoading(true);
 
     Promise.all([
       apiRequest(`/api/stores/${storeId}`),
-      apiRequest(`/api/products?store=${encodeURIComponent(storeId)}`).catch(() => ({ products: [] })),
+      apiRequest(
+        `/api/products?store=${encodeURIComponent(storeId)}`
+      ).catch(() => ({ products: [] })),
     ])
       .then(([storeData, productData]) => {
         if (cancelled) return;
+
         const item = storeData.store;
+
         setStore({
           ...item,
           id: item.slug,
           tagline: item.category,
-          initials: item.name.split(/\s+/).slice(0, 2).map((word) => word[0]).join("").toUpperCase(),
-          rating: null,
-          reviewCount: 0,
+          initials: item.name
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((word) => word[0])
+            .join("")
+            .toUpperCase(),
+          rating: item.rating || null,
+          reviewCount: item.reviewCount || 0,
         });
-        setStoreProducts(productData.products);
+
+        setStoreProducts(
+          Array.isArray(productData.products)
+            ? productData.products
+            : []
+        );
       })
       .catch(() => {
-        if (!cancelled) setStore(null);
+        if (!cancelled) {
+          setStore(null);
+          setStoreProducts([]);
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [sampleStore, storeId]);
+  }, [storeId]);
 
   if (loading) {
-    return <Layout><div className="flex min-h-[65vh] items-center justify-center bg-slate-50 text-slate-500">Loading store…</div></Layout>;
+    return (
+      <Layout>
+        <div className="flex min-h-[65vh] flex-col items-center justify-center bg-slate-50 text-slate-500">
+          <div className="h-11 w-11 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
+          <p className="mt-5 font-semibold">Loading store…</p>
+        </div>
+      </Layout>
+    );
   }
 
   if (!store) {
@@ -57,8 +81,21 @@ function Storefront() {
       <Layout>
         <section className="flex min-h-[65vh] items-center justify-center bg-slate-950 px-6 text-center">
           <div>
-            <h1 className="text-3xl font-black text-white">Store not found</h1>
-            <Link to="/stores" className="mt-5 inline-block font-bold text-orange-400">Browse all stores</Link>
+            <h1 className="text-3xl font-black text-white">
+              Store not found
+            </h1>
+
+            <p className="mt-3 text-slate-400">
+              This store may not be approved, or it may have been suspended
+              or removed.
+            </p>
+
+            <Link
+              to="/stores"
+              className="mt-5 inline-block font-bold text-orange-400"
+            >
+              Browse approved stores
+            </Link>
           </div>
         </section>
       </Layout>
@@ -74,33 +111,74 @@ function Storefront() {
               <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-orange-500 text-3xl font-black text-white">
                 {store.initials}
               </div>
+
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-4xl font-black text-slate-950">{store.name}</h1>
-                  {store.verified && <BadgeCheck className="text-orange-400" />}
+                  <h1 className="text-4xl font-black text-slate-950">
+                    {store.name}
+                  </h1>
+
+                  {store.verified && (
+                    <BadgeCheck className="text-orange-400" />
+                  )}
                 </div>
-                <p className="mt-3 text-lg text-slate-700">{store.tagline}</p>
+
+                <p className="mt-3 text-lg text-slate-700">
+                  {store.tagline}
+                </p>
+
                 <div className="mt-4 flex flex-wrap gap-5 text-sm text-slate-500">
-                  <span className="flex items-center gap-2"><MapPin size={17} />{store.location}</span>
-                  {store.rating && <span className="flex items-center gap-2"><Star size={17} className="fill-yellow-400 text-yellow-400" />{store.rating} from {store.reviewCount} reviews</span>}
+                  <span className="flex items-center gap-2">
+                    <MapPin size={17} />
+                    {store.location}
+                  </span>
+
+                  {store.rating && (
+                    <span className="flex items-center gap-2">
+                      <Star
+                        size={17}
+                        className="fill-yellow-400 text-yellow-400"
+                      />
+                      {store.rating} from {store.reviewCount} reviews
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
-            <p className="mt-7 max-w-3xl leading-7 text-slate-600">{store.description}</p>
+
+            <p className="mt-7 max-w-3xl leading-7 text-slate-600">
+              {store.description}
+            </p>
           </div>
 
           <div className="mb-8 mt-12 flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-400">From this store</p>
-              <h2 className="mt-2 text-3xl font-black text-slate-950">Available products</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange-400">
+                From this store
+              </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-950">
+                Available products
+              </h2>
             </div>
-            <span className="text-sm text-slate-500">{storeProducts.length} product{storeProducts.length === 1 ? "" : "s"}</span>
+
+            <span className="text-sm text-slate-500">
+              {storeProducts.length} product
+              {storeProducts.length === 1 ? "" : "s"}
+            </span>
           </div>
-          <ProductGrid products={storeProducts} />
+
+          {storeProducts.length > 0 ? (
+            <ProductGrid products={storeProducts} />
+          ) : (
+            <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center text-slate-600">
+              This store has no approved products yet.
+            </div>
+          )}
         </div>
       </section>
     </Layout>
   );
 }
 
-export default Storefront;
+export default Storefront; 

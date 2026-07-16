@@ -386,7 +386,31 @@ function SellerDashboard() {
                   <div><dt className="text-sm font-semibold text-slate-500">Location</dt><dd className="mt-1 text-xl font-bold">{store.location}</dd></div>
                   <div><dt className="text-sm font-semibold text-slate-500">Visibility</dt><dd className="mt-1 text-xl font-bold">Private</dd></div>
                 </dl>
-                {store.reviewNote && <div className="mt-8 rounded-2xl bg-slate-100 p-5"><p className="text-sm font-bold text-slate-500">Admin note</p><p className="mt-2 text-slate-700">{store.reviewNote}</p></div>}
+                {store.reviewNote && (
+                  <div className="mt-8 rounded-2xl bg-slate-100 p-5">
+                    <p className="text-sm font-bold text-slate-500">Admin note</p>
+                    <p className="mt-2 text-slate-700">{store.reviewNote}</p>
+                  </div>
+                )}
+
+                {store.status === "rejected" && (
+                  <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5">
+                    <h3 className="text-lg font-black text-red-800">
+                      Correct your store application
+                    </h3>
+                    <p className="mt-2 leading-7 text-red-700">
+                      Update the details mentioned in the administrator's note, then
+                      submit the application again for another review.
+                    </p>
+                    <Link
+                      to="/sell#apply"
+                      className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-bold text-white transition hover:bg-red-700"
+                    >
+                      <Pencil size={18} />
+                      Edit and resubmit
+                    </Link>
+                  </div>
+                )}
               </div>
               <aside className="rounded-3xl bg-slate-900 p-8 text-white">
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-orange-400">How approval works</p>
@@ -589,4 +613,4 @@ function SellerDashboard() {
   );
 }
 
-export default SellerDashboard;
+export default SellerDashboard; 
