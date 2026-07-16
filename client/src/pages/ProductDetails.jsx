@@ -1,58 +1,92 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck, MapPin, Store } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
-import products from "../data/products";
 import { useCart } from "../context/CartContext";
 import { apiRequest } from "../lib/api";
 
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const { addToCart } = useCart();
 
-  const sampleProduct = products.find(
-    (item) => item.id === Number(id)
-  );
-  const [product, setProduct] = useState(sampleProduct || null);
-  const [loading, setLoading] = useState(!sampleProduct);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    if (sampleProduct) return undefined;
     let cancelled = false;
+
+    setLoading(true);
+    setProduct(null);
+    setQuantity(1);
 
     apiRequest(`/api/products/${id}`)
       .then((data) => {
-        if (!cancelled) setProduct(data.product);
+        if (!cancelled) {
+          setProduct(data.product || null);
+        }
       })
       .catch(() => {
-        if (!cancelled) setProduct(null);
+        if (!cancelled) {
+          setProduct(null);
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [id, sampleProduct]);
+  }, [id]);
 
   if (loading) {
-    return <Layout><div className="flex min-h-[70vh] items-center justify-center bg-slate-50 text-slate-500">Loading product…</div></Layout>;
+    return (
+      <Layout>
+        <div className="flex min-h-[70vh] flex-col items-center justify-center bg-slate-50 text-slate-500">
+          <div className="h-11 w-11 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
+          <p className="mt-5 font-semibold">
+            Loading product…
+          </p>
+        </div>
+      </Layout>
+    );
   }
 
   if (!product) {
     return (
       <Layout>
-        <div className="min-h-screen flex justify-center items-center text-white text-3xl">
-          Product Not Found
+        <div className="flex min-h-[70vh] flex-col items-center justify-center bg-slate-50 px-6 text-center">
+          <h1 className="text-3xl font-black text-slate-950">
+            Product not found
+          </h1>
+
+          <p className="mt-3 text-slate-600">
+            This product may not be approved, or it may have been removed.
+          </p>
+
+          <Link
+            to="/shop"
+            className="mt-6 rounded-xl bg-orange-500 px-5 py-3 font-bold text-white hover:bg-orange-600"
+          >
+            Return to shop
+          </Link>
         </div>
       </Layout>
     );
   }
+
+  const stock = Number(product.stock || 0);
+  const price = Number(product.price || 0);
+  const oldPrice = Number(product.oldPrice || 0);
 
   function addItemToCart() {
     addToCart(product, quantity);
@@ -65,33 +99,21 @@ function ProductDetails() {
 
   return (
     <Layout>
-
       <section className="min-h-screen bg-slate-50 py-16 text-slate-900">
-
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16">
-
-          {/* Product Image */}
-
+        <div className="mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-2">
           <div>
-
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-
               <img
                 src={product.image}
                 alt={product.name}
                 decoding="async"
-                className="w-full rounded-2xl"
+                className="w-full rounded-2xl object-cover"
               />
-
             </div>
-
           </div>
 
-          {/* Product Info */}
-
           <div>
-
-            <span className="bg-orange-500 text-white px-4 py-2 rounded-full">
+            <span className="rounded-full bg-orange-500 px-4 py-2 text-white">
               {product.category}
             </span>
 
@@ -99,59 +121,94 @@ function ProductDetails() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-3 mt-5">
-
-              <span className="text-yellow-500 text-xl">
-                {product.rating ? `⭐ ${product.rating}` : "New listing"}
+            <div className="mt-5 flex items-center gap-3">
+              <span className="text-xl text-yellow-500">
+                {product.rating
+                  ? `⭐ ${product.rating}`
+                  : "New listing"}
               </span>
 
-              <span className={product.stock > 0 ? "text-green-400" : "text-red-400"}>
-                {product.stock > 0 ? `${product.stock} in stock` : "Sold out"}
+              <span
+                className={
+                  stock > 0
+                    ? "text-green-600"
+                    : "text-red-500"
+                }
+              >
+                {stock > 0
+                  ? `${stock} in stock`
+                  : "Sold out"}
               </span>
-
             </div>
 
-            <div className="flex gap-5 items-center mt-8">
-
+            <div className="mt-8 flex items-center gap-5">
               <h2 className="text-5xl font-bold text-orange-600">
-                ₦{product.price.toLocaleString()}
+                ₦{price.toLocaleString()}
               </h2>
 
-              {product.oldPrice && <h3 className="text-2xl line-through text-gray-500">₦{product.oldPrice.toLocaleString()}</h3>}
-
+              {oldPrice > 0 && (
+                <h3 className="text-2xl text-gray-500 line-through">
+                  ₦{oldPrice.toLocaleString()}
+                </h3>
+              )}
             </div>
 
-            <p className="mt-8 leading-8 text-slate-600">{product.description}</p>
+            <p className="mt-8 leading-8 text-slate-600">
+              {product.description}
+            </p>
 
             <div className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Sold by</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+                Sold by
+              </p>
+
               <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-                <Link to={`/stores/${product.storeId}`} className="flex items-center gap-2 font-bold text-slate-950 hover:text-orange-600">
-                  <Store size={19} className="text-orange-400" />
+                <Link
+                  to={`/stores/${product.storeId}`}
+                  className="flex items-center gap-2 font-bold text-slate-950 hover:text-orange-600"
+                >
+                  <Store
+                    size={19}
+                    className="text-orange-400"
+                  />
+
                   {product.storeName}
-                  {product.sellerVerified && <BadgeCheck size={18} className="text-orange-400" />}
+
+                  {product.sellerVerified && (
+                    <BadgeCheck
+                      size={18}
+                      className="text-orange-400"
+                    />
+                  )}
                 </Link>
-                <span className="flex items-center gap-2 text-sm text-slate-500"><MapPin size={16} /> Nigeria</span>
+
+                <span className="flex items-center gap-2 text-sm text-slate-500">
+                  <MapPin size={16} />
+                  Nigeria
+                </span>
               </div>
-              <p className="mt-3 text-sm text-slate-500">Estimated delivery: {product.deliveryEstimate}</p>
+
+              <p className="mt-3 text-sm text-slate-500">
+                Estimated delivery:{" "}
+                {product.deliveryEstimate}
+              </p>
             </div>
 
-            {/* Quantity */}
-
             <div className="mt-10">
-
               <h3 className="mb-3 font-semibold text-slate-900">
                 Quantity
               </h3>
 
               <div className="flex items-center gap-4">
-
                 <button
+                  type="button"
                   onClick={() =>
-                    quantity > 1 &&
-                    setQuantity(quantity - 1)
+                    setQuantity((current) =>
+                      Math.max(1, current - 1)
+                    )
                   }
-                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900"
+                  disabled={quantity <= 1}
+                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   -
                 </button>
@@ -161,46 +218,49 @@ function ProductDetails() {
                 </span>
 
                 <button
+                  type="button"
                   onClick={() =>
-                    setQuantity(Math.min(quantity + 1, product.stock))
+                    setQuantity((current) =>
+                      Math.min(current + 1, stock)
+                    )
                   }
-                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900"
+                  disabled={
+                    stock < 1 || quantity >= stock
+                  }
+                  className="h-12 w-12 rounded-xl border border-slate-300 bg-white text-xl text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   +
                 </button>
-
               </div>
-
             </div>
 
-            {/* Buttons */}
-
-            <div className="flex gap-4 mt-12">
-
+            <div className="mt-12 flex gap-4">
               <button
+                type="button"
                 onClick={addItemToCart}
-                disabled={product.stock < 1}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl text-lg font-bold transition disabled:cursor-not-allowed disabled:bg-slate-700"
+                disabled={stock < 1}
+                className="flex-1 rounded-xl bg-orange-500 py-4 text-lg font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 Add To Cart
               </button>
 
-              <button onClick={buyNow} disabled={product.stock < 1} className="rounded-xl bg-slate-900 px-8 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:text-slate-500">
+              <button
+                type="button"
+                onClick={buyNow}
+                disabled={stock < 1}
+                className="rounded-xl bg-slate-900 px-8 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
                 Buy Now
               </button>
-
             </div>
 
-            {/* Features */}
-
-            <div className="grid grid-cols-2 gap-6 mt-14">
-
+            <div className="mt-14 grid grid-cols-2 gap-6">
               <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 🚚 Delivery estimate shown
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
-                🔒 Secure Payments
+                🔒 Secure payments
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
@@ -210,17 +270,12 @@ function ProductDetails() {
               <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-700">
                 💬 Seller support
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </Layout>
   );
 }
 
-export default ProductDetails;
+export default ProductDetails; 
