@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 import User from "../models/User.js";
 import {
+  sendPasswordChangedEmail,
   sendPasswordResetOTP,
   sendVerificationOTP,
 } from "../services/emailService.js";
@@ -668,12 +669,21 @@ export async function verifyResetOTP(req, res) {
 
 export async function resetPassword(req, res) {
   try {
-    const { resetToken, password, confirmPassword } = req.body;
+    const {
+      resetToken,
+      password,
+      confirmPassword,
+    } = req.body;
 
-    if (!resetToken || !password || !confirmPassword) {
+    if (
+      !resetToken ||
+      !password ||
+      !confirmPassword
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Complete all password-reset fields.",
+        message:
+          "Complete all password-reset fields.",
       });
     }
 
@@ -687,7 +697,8 @@ export async function resetPassword(req, res) {
     if (password.length < 8) {
       return res.status(400).json({
         success: false,
-        message: "Password must contain at least 8 characters.",
+        message:
+          "Password must contain at least 8 characters.",
       });
     }
 
@@ -706,14 +717,19 @@ export async function resetPassword(req, res) {
       });
     }
 
-    if (decoded.purpose !== "password-reset") {
+    if (
+      decoded.purpose !== "password-reset"
+    ) {
       return res.status(401).json({
         success: false,
-        message: "Invalid password-reset token.",
+        message:
+          "Invalid password-reset token.",
       });
     }
 
-    const user = await User.findById(decoded.userId).select(
+    const user = await User.findById(
+      decoded.userId
+    ).select(
       "+password +refreshToken +loginAttempts +lockUntil"
     );
 
@@ -724,12 +740,34 @@ export async function resetPassword(req, res) {
       });
     }
 
-    user.password = await bcrypt.hash(password, 12);
+    user.password = await bcrypt.hash(
+      password,
+      12
+    );
+
+    // Sign the user out from existing sessions.
     user.refreshToken = null;
     user.loginAttempts = 0;
     user.lockUntil = null;
 
     await user.save();
+
+    /*
+     * The password has already been changed at this
+     * point. A temporary email failure must not undo
+     * or falsely report the password reset as failed.
+     */
+    try {
+      await sendPasswordChangedEmail({
+        email: user.email,
+        firstName: user.firstName,
+      });
+    } catch (emailError) {
+      console.error(
+        "Password changed, but security alert email failed:",
+        emailError
+      );
+    }
 
     return res.status(200).json({
       success: true,
@@ -737,11 +775,15 @@ export async function resetPassword(req, res) {
         "Your password has been reset successfully. You can now log in.",
     });
   } catch (error) {
-    console.error("Reset password error:", error);
+    console.error(
+      "Reset password error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Unable to reset your password.",
+      message:
+        "Unable to reset your password.",
     });
   }
-} 
+}
