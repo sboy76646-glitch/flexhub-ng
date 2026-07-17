@@ -5,32 +5,55 @@ import {
   useContext,
   useState,
 } from "react";
+
 import toast from "react-hot-toast";
 
-import { API_BASE_URL } from "../lib/api";
+import {
+  API_BASE_URL,
+} from "../lib/api";
 
 const AuthContext = createContext(null);
 
-const API_URL = `${API_BASE_URL}/api/auth`;
+const API_URL =
+  `${API_BASE_URL}/api/auth`;
 
-const USER_STORAGE_KEY = "flexhub-user";
-const TOKEN_STORAGE_KEY = "flexhub-token";
+const USER_STORAGE_KEY =
+  "flexhub-user";
+
+const TOKEN_STORAGE_KEY =
+  "flexhub-token";
+
+const AUTH_REQUEST_TIMEOUT = 30000;
 
 function clearStoredSession() {
-  localStorage.removeItem(USER_STORAGE_KEY);
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(
+    USER_STORAGE_KEY
+  );
 
-  sessionStorage.removeItem(USER_STORAGE_KEY);
-  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(
+    TOKEN_STORAGE_KEY
+  );
+
+  sessionStorage.removeItem(
+    USER_STORAGE_KEY
+  );
+
+  sessionStorage.removeItem(
+    TOKEN_STORAGE_KEY
+  );
 }
 
 function readStoredSession() {
   try {
     const localToken =
-      localStorage.getItem(TOKEN_STORAGE_KEY);
+      localStorage.getItem(
+        TOKEN_STORAGE_KEY
+      );
 
     const localUser =
-      localStorage.getItem(USER_STORAGE_KEY);
+      localStorage.getItem(
+        USER_STORAGE_KEY
+      );
 
     if (localToken && localUser) {
       return {
@@ -41,12 +64,19 @@ function readStoredSession() {
     }
 
     const sessionToken =
-      sessionStorage.getItem(TOKEN_STORAGE_KEY);
+      sessionStorage.getItem(
+        TOKEN_STORAGE_KEY
+      );
 
     const sessionUser =
-      sessionStorage.getItem(USER_STORAGE_KEY);
+      sessionStorage.getItem(
+        USER_STORAGE_KEY
+      );
 
-    if (sessionToken && sessionUser) {
+    if (
+      sessionToken &&
+      sessionUser
+    ) {
       return {
         token: sessionToken,
         user: JSON.parse(sessionUser),
@@ -91,7 +121,9 @@ function saveSession({
   );
 }
 
-export function AuthProvider({ children }) {
+export function AuthProvider({
+  children,
+}) {
   const [initialSession] =
     useState(readStoredSession);
 
@@ -115,47 +147,83 @@ export function AuthProvider({ children }) {
     endpoint,
     payload
   ) {
-    const response = await fetch(
-      `${API_URL}/${endpoint}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
+    const controller =
+      new AbortController();
+
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      AUTH_REQUEST_TIMEOUT
     );
 
-    let data;
-
     try {
-      data = await response.json();
-    } catch {
-      throw new Error(
-        "The server returned an invalid response."
-      );
-    }
+      const response = await fetch(
+        `${API_URL}/${endpoint}`,
+        {
+          method: "POST",
 
-    if (!response.ok) {
-      const error = new Error(
-        data.message ||
-          "Authentication request failed."
+          signal:
+            controller.signal,
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            payload
+          ),
+        }
       );
 
-      error.data = data;
-      error.status = response.status;
+      const data = await response
+        .json()
+        .catch(() => ({}));
+
+      if (!response.ok) {
+        const error = new Error(
+          data.message ||
+            `Authentication request failed with status ${response.status}.`
+        );
+
+        error.data = data;
+        error.status =
+          response.status;
+
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      if (
+        error.name ===
+        "AbortError"
+      ) {
+        throw new Error(
+          "The server took too long to respond. Please wait a moment and try again."
+        );
+      }
+
+      if (
+        error instanceof TypeError
+      ) {
+        throw new Error(
+          "Unable to reach the FlexHub server. Please check your connection and try again."
+        );
+      }
 
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return data;
   }
 
-  function getErrorMessage(error) {
-    return error instanceof TypeError
-      ? "Unable to reach the server. Please try again."
-      : error.message;
+  function getErrorMessage(
+    error
+  ) {
+    return (
+      error?.message ||
+      "The request could not be completed."
+    );
   }
 
   function applyAuthenticatedSession({
@@ -165,7 +233,10 @@ export function AuthProvider({ children }) {
   }) {
     setUser(authenticatedUser);
     setToken(authenticatedToken);
-    setRememberSession(rememberMe);
+
+    setRememberSession(
+      rememberMe
+    );
 
     saveSession({
       user: authenticatedUser,
@@ -182,14 +253,15 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "login",
-        {
-          identifier:
-            identifier.trim(),
-          password,
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "login",
+          {
+            identifier:
+              identifier.trim(),
+            password,
+          }
+        );
 
       applyAuthenticatedSession({
         user: data.user,
@@ -215,10 +287,11 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         message,
-        requiresVerification: Boolean(
-          error.data
-            ?.requiresVerification
-        ),
+        requiresVerification:
+          Boolean(
+            error.data
+              ?.requiresVerification
+          ),
         email:
           error.data?.email || "",
       };
@@ -227,24 +300,31 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function register(formData) {
+  async function register(
+    formData
+  ) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "register",
-        {
-          ...formData,
-          firstName:
-            formData.firstName.trim(),
-          lastName:
-            formData.lastName.trim(),
-          email:
-            formData.email.trim(),
-          phone:
-            formData.phone.trim(),
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "register",
+          {
+            ...formData,
+
+            firstName:
+              formData.firstName.trim(),
+
+            lastName:
+              formData.lastName.trim(),
+
+            email:
+              formData.email.trim(),
+
+            phone:
+              formData.phone.trim(),
+          }
+        );
 
       toast.success(
         data.message ||
@@ -254,12 +334,15 @@ export function AuthProvider({ children }) {
       return {
         success: true,
         user: data.user || null,
+
         email:
           data.email ||
           formData.email.trim(),
-        requiresVerification: Boolean(
-          data.requiresVerification
-        ),
+
+        requiresVerification:
+          Boolean(
+            data.requiresVerification
+          ),
       };
     } catch (error) {
       const message =
@@ -270,10 +353,13 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         message,
-        requiresVerification: Boolean(
-          error.data
-            ?.requiresVerification
-        ),
+
+        requiresVerification:
+          Boolean(
+            error.data
+              ?.requiresVerification
+          ),
+
         email:
           error.data?.email ||
           formData.email.trim(),
@@ -290,15 +376,19 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "verify-email",
-        {
-          email: email.trim(),
-          otp: otp.trim(),
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "verify-email",
+          {
+            email: email.trim(),
+            otp: otp.trim(),
+          }
+        );
 
-      if (data.user && data.token) {
+      if (
+        data.user &&
+        data.token
+      ) {
         applyAuthenticatedSession({
           user: data.user,
           token: data.token,
@@ -333,13 +423,16 @@ export function AuthProvider({ children }) {
   async function resendVerificationOTP(
     email
   ) {
+    setLoading(true);
+
     try {
-      const data = await sendAuthRequest(
-        "resend-verification-otp",
-        {
-          email: email.trim(),
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "resend-verification-otp",
+          {
+            email: email.trim(),
+          }
+        );
 
       toast.success(
         data.message ||
@@ -359,6 +452,8 @@ export function AuthProvider({ children }) {
         success: false,
         message,
       };
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -368,13 +463,14 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "forgot-password",
-        {
-          identifier:
-            identifier.trim(),
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "forgot-password",
+          {
+            identifier:
+              identifier.trim(),
+          }
+        );
 
       toast.success(
         data.message ||
@@ -407,13 +503,14 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "verify-reset-otp",
-        {
-          email: email.trim(),
-          otp: otp.trim(),
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "verify-reset-otp",
+          {
+            email: email.trim(),
+            otp: otp.trim(),
+          }
+        );
 
       toast.success(
         data.message ||
@@ -422,7 +519,8 @@ export function AuthProvider({ children }) {
 
       return {
         success: true,
-        resetToken: data.resetToken,
+        resetToken:
+          data.resetToken,
       };
     } catch (error) {
       const message =
@@ -447,14 +545,15 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const data = await sendAuthRequest(
-        "reset-password",
-        {
-          resetToken,
-          password,
-          confirmPassword,
-        }
-      );
+      const data =
+        await sendAuthRequest(
+          "reset-password",
+          {
+            resetToken,
+            password,
+            confirmPassword,
+          }
+        );
 
       toast.success(
         data.message ||
@@ -482,6 +581,7 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null);
     setToken("");
+
     setRememberSession(false);
 
     clearStoredSession();
@@ -491,29 +591,35 @@ export function AuthProvider({ children }) {
     );
   }
 
-  function updateUser(changes) {
-    setUser((currentUser) => {
-      if (!currentUser) {
-        return currentUser;
+  function updateUser(
+    changes
+  ) {
+    setUser(
+      (currentUser) => {
+        if (!currentUser) {
+          return currentUser;
+        }
+
+        const updatedUser = {
+          ...currentUser,
+          ...changes,
+        };
+
+        const storage =
+          rememberSession
+            ? localStorage
+            : sessionStorage;
+
+        storage.setItem(
+          USER_STORAGE_KEY,
+          JSON.stringify(
+            updatedUser
+          )
+        );
+
+        return updatedUser;
       }
-
-      const updatedUser = {
-        ...currentUser,
-        ...changes,
-      };
-
-      const storage =
-        rememberSession
-          ? localStorage
-          : sessionStorage;
-
-      storage.setItem(
-        USER_STORAGE_KEY,
-        JSON.stringify(updatedUser)
-      );
-
-      return updatedUser;
-    });
+    );
   }
 
   const value = {
@@ -529,13 +635,16 @@ export function AuthProvider({ children }) {
     resetPassword,
     logout,
     updateUser,
+
     isAuthenticated: Boolean(
       user && token
     ),
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={value}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -552,4 +661,4 @@ export function useAuth() {
   }
 
   return context;
-} 
+}
