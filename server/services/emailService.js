@@ -1,6 +1,10 @@
+import dns from "node:dns";
 import nodemailer from "nodemailer";
 
-let transporter;
+// Prefer IPv4 when resolving Gmail's SMTP server.
+dns.setDefaultResultOrder("ipv4first");
+
+let transporter = null;
 
 function getEmailCredentials() {
   const emailUser =
@@ -34,20 +38,25 @@ function createTransporter() {
   } = getEmailCredentials();
 
   transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+
+    // Force Gmail SMTP to use IPv4.
+    family: 4,
 
     auth: {
       user: emailUser,
       pass: emailPassword,
     },
 
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
 
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
+    tls: {
+      servername: "smtp.gmail.com",
+    },
   });
 
   return transporter;
@@ -61,7 +70,7 @@ export async function verifyEmailTransporter() {
     await emailTransporter.verify();
 
     console.log(
-      "✅ FlexHub NG email transporter is ready."
+      "✅ FlexHub NG email transporter is ready using IPv4."
     );
 
     return true;
@@ -72,6 +81,8 @@ export async function verifyEmailTransporter() {
         message: error.message,
         code: error.code,
         command: error.command,
+        address: error.address,
+        port: error.port,
         response: error.response,
       }
     );
@@ -164,6 +175,8 @@ FlexHub NG
       message: error.message,
       code: error.code,
       command: error.command,
+      address: error.address,
+      port: error.port,
       response: error.response,
       responseCode: error.responseCode,
     });
@@ -204,4 +217,4 @@ export async function sendPasswordResetOTP({
     message:
       "Use the code below to verify your password-reset request. If you did not request this, you can ignore this email.",
   });
-}
+} 
