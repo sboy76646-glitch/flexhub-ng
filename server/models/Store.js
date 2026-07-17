@@ -62,6 +62,32 @@ const storeSchema = new mongoose.Schema(
       default: false,
     },
 
+    verificationLevel: {
+      type: String,
+      enum: ["unverified", "bronze", "silver", "gold", "platinum"],
+      default: "unverified",
+      index: true,
+    },
+
+    verificationChecks: {
+      email: { type: Boolean, default: false },
+      phone: { type: Boolean, default: false },
+      identity: { type: Boolean, default: false },
+      address: { type: Boolean, default: false },
+      business: { type: Boolean, default: false },
+      physicalInspection: { type: Boolean, default: false },
+    },
+
+    performance: {
+      completedOrders: { type: Number, min: 0, default: 0 },
+      sellerScore: { type: Number, min: 0, max: 100, default: 0 },
+      onTimeDeliveryRate: { type: Number, min: 0, max: 100, default: 0 },
+      returnRate: { type: Number, min: 0, max: 100, default: 0 },
+      cancellationRate: { type: Number, min: 0, max: 100, default: 0 },
+      repeatCustomerRate: { type: Number, min: 0, max: 100, default: 0 },
+      averageResponseMinutes: { type: Number, min: 0, default: null },
+    },
+
     reviewNote: {
       type: String,
       trim: true,
@@ -182,4 +208,6 @@ const storeSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Store", storeSchema); 
+storeSchema.index({ status: 1, verificationLevel: 1, createdAt: -1 });
+
+export default mongoose.model("Store", storeSchema);
