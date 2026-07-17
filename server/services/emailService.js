@@ -1,94 +1,22 @@
-import dns from "node:dns";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// Prefer IPv4 when resolving Gmail's SMTP server.
-dns.setDefaultResultOrder("ipv4first");
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
 
-let transporter = null;
-
-function getEmailCredentials() {
-  const emailUser =
-    process.env.EMAIL_USER?.trim();
-
-  const emailPassword =
-    process.env.EMAIL_APP_PASSWORD
-      ?.replace(/\s+/g, "")
-      .trim();
-
-  if (!emailUser || !emailPassword) {
+  if (!apiKey) {
     throw new Error(
-      "EMAIL_USER and EMAIL_APP_PASSWORD must be configured."
+      "RESEND_API_KEY is not configured."
     );
   }
 
-  return {
-    emailUser,
-    emailPassword,
-  };
+  return new Resend(apiKey);
 }
 
-function createTransporter() {
-  if (transporter) {
-    return transporter;
-  }
-
-  const {
-    emailUser,
-    emailPassword,
-  } = getEmailCredentials();
-
-  transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-
-    // Force Gmail SMTP to use IPv4.
-    family: 4,
-
-    auth: {
-      user: emailUser,
-      pass: emailPassword,
-    },
-
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-
-    tls: {
-      servername: "smtp.gmail.com",
-    },
-  });
-
-  return transporter;
-}
-
-export async function verifyEmailTransporter() {
-  try {
-    const emailTransporter =
-      createTransporter();
-
-    await emailTransporter.verify();
-
-    console.log(
-      "✅ FlexHub NG email transporter is ready using IPv4."
-    );
-
-    return true;
-  } catch (error) {
-    console.error(
-      "❌ Email transporter verification failed:",
-      {
-        message: error.message,
-        code: error.code,
-        command: error.command,
-        address: error.address,
-        port: error.port,
-        response: error.response,
-      }
-    );
-
-    return false;
-  }
+function getSenderAddress() {
+  return (
+    process.env.EMAIL_FROM?.trim() ||
+    "FlexHub NG <onboarding@resend.dev>"
+  );
 }
 
 async function sendOTPEmail({
@@ -99,22 +27,19 @@ async function sendOTPEmail({
   heading,
   message,
 }) {
-  const {
-    emailUser,
-  } = getEmailCredentials();
+  const resend = getResendClient();
 
-  const emailTransporter =
-    createTransporter();
+  const recipientName =
+    firstName?.trim() || "FlexHub user";
 
-  try {
-    const result =
-      await emailTransporter.sendMail({
-        from: `"FlexHub NG" <${emailUser}>`,
-        to: email,
-        subject,
+  const { data, error } =
+    await resend.emails.send({
+      from: getSenderAddress(),
+      to: [email],
+      subject,
 
-        text: `
-Hello ${firstName || "FlexHub user"},
+      text: `
+Hello ${recipientName},
 
 ${message}
 
@@ -125,64 +50,78 @@ This code expires in 10 minutes.
 Do not share this code with anyone.
 
 FlexHub NG
-        `.trim(),
+      `.trim(),
 
-        html: `
-          <div style="font-family: Arial, sans-serif; background: #f8fafc; padding: 32px;">
-            <div style="max-width: 520px; margin: auto; background: #ffffff; border-radius: 16px; padding: 32px;">
-              <h1 style="color: #0f172a; margin-top: 0;">
-                ${heading}
-              </h1>
+      html: `
+        <div style="font-family:Arial,sans-serif;background:#f8fafc;padding:32px;">
+          <div style="max-width:520px;margin:auto;background:#ffffff;border-radius:16px;padding:32px;">
+            <h1 style="color:#0f172a;margin-top:0;">
+              ${heading}
+            </h1>
 
-              <p style="color: #475569; font-size: 16px;">
-                Hello ${firstName || "FlexHub user"},
-              </p>
+            <p style="color:#475569;font-size:16px;">
+              Hello ${recipientName},
+            </p>
 
-              <p style="color: #475569; font-size: 16px;">
-                ${message}
-              </p>
+            <p style="color:#475569;font-size:16px;">
+              ${message}
+            </p>
 
-              <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
-                <strong style="font-size: 32px; letter-spacing: 8px; color: #f97316;">
-                  ${otp}
-                </strong>
-              </div>
-
-              <p style="color: #64748b;">
-                This code expires in 10 minutes.
-              </p>
-
-              <p style="color: #64748b;">
-                Do not share this code with anyone.
-              </p>
-
-              <p style="color: #0f172a; font-weight: bold; margin-bottom: 0;">
-                FlexHub NG
-              </p>
+            <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
+              <strong style="font-size:32px;letter-spacing:8px;color:#f97316;">
+                ${otp}
+              </strong>
             </div>
+
+            <p style="color:#64748b;">
+              This code expires in 10 minutes.
+            </p>
+
+            <p style="color:#64748b;">
+              Do not share this code with anyone.
+            </p>
+
+            <p style="color:#0f172a;font-weight:bold;margin-bottom:0;">
+              FlexHub NG
+            </p>
           </div>
-        `,
-      });
-
-    console.log(
-      `✅ OTP email sent to ${email}. Message ID: ${result.messageId}`
-    );
-
-    return result;
-  } catch (error) {
-    console.error("❌ OTP email failed:", {
-      email,
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      address: error.address,
-      port: error.port,
-      response: error.response,
-      responseCode: error.responseCode,
+        </div>
+      `,
     });
 
-    throw error;
+  if (error) {
+    console.error(
+      "❌ Resend email error:",
+      error
+    );
+
+    throw new Error(
+      error.message ||
+        "The email provider rejected the message."
+    );
   }
+
+  console.log(
+    `✅ OTP email sent to ${email}. ID: ${data?.id}`
+  );
+
+  return data;
+}
+
+export async function verifyEmailTransporter() {
+  if (!process.env.RESEND_API_KEY) {
+    console.error(
+      "❌ RESEND_API_KEY is missing."
+    );
+
+    return false;
+  }
+
+  console.log(
+    "✅ Resend email service is configured."
+  );
+
+  return true;
 }
 
 export async function sendVerificationOTP({
@@ -217,4 +156,4 @@ export async function sendPasswordResetOTP({
     message:
       "Use the code below to verify your password-reset request. If you did not request this, you can ignore this email.",
   });
-} 
+}
