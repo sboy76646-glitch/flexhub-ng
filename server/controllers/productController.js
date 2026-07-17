@@ -29,12 +29,23 @@ function parseProductFields(body) {
   const stock = Number(body.stock);
   const oldPrice = body.oldPrice === "" || body.oldPrice == null ? null : Number(body.oldPrice);
 
+  const condition = String(body.condition || "brand_new").trim();
+  const warranty = String(body.warranty || "No warranty information provided").trim();
+  const returnWindowDays = Number(body.returnWindowDays ?? 0);
+  const dispatchTimeDays = Number(body.dispatchTimeDays ?? 1);
+  const fulfillmentType = String(body.fulfillmentType || "seller").trim();
+  const videoUrl = String(body.videoUrl || "").trim();
+
   if (!name || !category || !description || !imageUrl) {
     throw new Error("Please complete all product details.");
   }
 
   if (!isWebUrl(imageUrl)) {
     throw new Error("Use a valid http or https link for the product image.");
+  }
+
+  if (videoUrl && !isWebUrl(videoUrl)) {
+    throw new Error("Use a valid http or https link for the product video.");
   }
 
   if (!Number.isInteger(price) || price < 100 || price > 1000000000) {
@@ -49,11 +60,47 @@ function parseProductFields(body) {
     throw new Error("The old price must be a whole-naira amount that is not lower than the selling price.");
   }
 
-  return { name, category, description, imageUrl, price, oldPrice, stock };
+  if (!["brand_new", "open_box", "uk_used", "refurbished", "used"].includes(condition)) {
+    throw new Error("Choose a valid product condition.");
+  }
+
+  if (!warranty || warranty.length > 160) {
+    throw new Error("Warranty information must be between 1 and 160 characters.");
+  }
+
+  if (!Number.isInteger(returnWindowDays) || returnWindowDays < 0 || returnWindowDays > 30) {
+    throw new Error("Return window must be a whole number between 0 and 30 days.");
+  }
+
+  if (!Number.isInteger(dispatchTimeDays) || dispatchTimeDays < 0 || dispatchTimeDays > 30) {
+    throw new Error("Dispatch time must be a whole number between 0 and 30 days.");
+  }
+
+  if (!["seller", "flexhub"].includes(fulfillmentType)) {
+    throw new Error("Choose a valid fulfilment option.");
+  }
+
+  return {
+    name,
+    category,
+    description,
+    imageUrl,
+    price,
+    oldPrice,
+    stock,
+    condition,
+    warranty,
+    returnWindowDays,
+    dispatchTimeDays,
+    fulfillmentType,
+    videoUrl,
+  };
 }
 
 function publicProduct(product) {
   const store = product.store || {};
+  const performance = store.performance || {};
+  const verificationChecks = store.verificationChecks || {};
 
   return {
     id: product._id,
@@ -65,14 +112,53 @@ function publicProduct(product) {
     price: product.price,
     oldPrice: product.oldPrice,
     stock: product.stock,
+
+    condition: product.condition,
+    warranty: product.warranty,
+    returnWindowDays: product.returnWindowDays,
+    returnEligible: product.returnWindowDays > 0,
+    dispatchTimeDays: product.dispatchTimeDays,
+    deliveryEstimate: product.dispatchTimeDays === 0
+      ? "Dispatches today"
+      : `Dispatches within ${product.dispatchTimeDays} day${product.dispatchTimeDays === 1 ? "" : "s"}`,
+    fulfillmentType: product.fulfillmentType,
+    videoUrl: product.videoUrl,
+    verificationStatus: product.verificationStatus,
+    actualImagesVerified: Boolean(product.actualImagesVerified),
+    flexProofVerified: Boolean(product.flexProofVerified),
+
     storeId: store.slug,
     storeName: store.name,
     sellerVerified: Boolean(store.verified),
+    verificationLevel: store.verificationLevel || "unverified",
+    verificationChecks: {
+      email: Boolean(verificationChecks.email),
+      phone: Boolean(verificationChecks.phone),
+      identity: Boolean(verificationChecks.identity),
+      address: Boolean(verificationChecks.address),
+      business: Boolean(verificationChecks.business),
+      physicalInspection: Boolean(verificationChecks.physicalInspection),
+    },
+    sellerScore: Number(performance.sellerScore || 0),
+    completedOrders: Number(performance.completedOrders || 0),
+    onTimeDeliveryRate: Number(performance.onTimeDeliveryRate || 0),
+    returnRate: Number(performance.returnRate || 0),
+    repeatCustomerRate: Number(performance.repeatCustomerRate || 0),
+    averageResponseMinutes: performance.averageResponseMinutes ?? null,
+
     rating: null,
     reviewCount: 0,
-    deliveryEstimate: "Delivery confirmed at checkout",
   };
 }
+
+const publicStoreFields = [
+  "name",
+  "slug",
+  "verified",
+  "verificationLevel",
+  "verificationChecks",
+  "performance",
+].join(" ");
 
 export async function listPublicProducts(req, res) {
   const approvedStoreIds = await Store.find({ status: "approved" }).distinct("_id");
@@ -96,7 +182,7 @@ export async function listPublicProducts(req, res) {
   }
 
   const products = await Product.find(query)
-    .populate("store", "name slug verified")
+    .populate("store", publicStoreFields)
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
@@ -110,7 +196,7 @@ export async function getPublicProduct(req, res) {
   }
 
   const product = await Product.findOne({ _id: req.params.productId, status: "approved" })
-    .populate({ path: "store", match: { status: "approved" }, select: "name slug verified" })
+    .populate({ path: "store", match: { status: "approved" }, select: publicStoreFields })
     .lean();
 
   if (!product?.store) {
@@ -172,8 +258,20 @@ export async function updateSellerProduct(req, res) {
 
   try {
     const fields = parseProductFields({ ...product.toObject(), ...req.body });
-    const listingChanged = ["name", "category", "description", "imageUrl", "price", "oldPrice"]
-      .some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""));
+    const listingChanged = [
+      "name",
+      "category",
+      "description",
+      "imageUrl",
+      "price",
+      "oldPrice",
+      "condition",
+      "warranty",
+      "returnWindowDays",
+      "dispatchTimeDays",
+      "fulfillmentType",
+      "videoUrl",
+    ].some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""));
 
     Object.assign(product, fields);
 
@@ -185,6 +283,12 @@ export async function updateSellerProduct(req, res) {
       product.reviewNote = "";
       product.reviewedAt = null;
       product.reviewedBy = null;
+
+      product.verificationStatus = "unverified";
+      product.actualImagesVerified = false;
+      product.flexProofVerified = false;
+      product.verifiedAt = null;
+      product.verifiedBy = null;
     } else if (draftRequested && ["draft", "rejected"].includes(product.status)) {
       product.status = "draft";
     }
