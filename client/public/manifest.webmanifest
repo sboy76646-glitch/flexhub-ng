@@ -1,0 +1,12 @@
+{
+  "name": "FlexHub NG Marketplace",
+  "short_name": "FlexHub NG",
+  "description": "Shop trusted gadgets, fashion, footwear and lifestyle products in Nigeria.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#f97316",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
