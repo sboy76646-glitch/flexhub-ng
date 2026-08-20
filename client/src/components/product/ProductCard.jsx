@@ -4,6 +4,19 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 
+const RECENTLY_VIEWED_KEY = "flexhub_recently_viewed";
+
+function rememberProduct(product) {
+  try {
+    const current = JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY) || "[]");
+    const id = String(product.id);
+    const next = [id, ...current.map(String).filter((item) => item !== id)].slice(0, 10);
+    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next));
+  } catch {
+    // Discovery should never block product navigation.
+  }
+}
+
 function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -30,11 +43,15 @@ function ProductCard({ product }) {
     if (stock > 0) addToCart(product);
   }
 
+  function handleProductView() {
+    rememberProduct(product);
+  }
+
   return (
     <article className="product-card overflow-hidden">
-      {/* Product image only */}
       <Link
         to={`/product/${product.id}`}
+        onClick={handleProductView}
         className="block h-36 overflow-hidden bg-slate-100 sm:h-44"
       >
         <img
@@ -65,7 +82,7 @@ function ProductCard({ product }) {
           </button>
         </div>
 
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.id}`} onClick={handleProductView}>
           <h3 className="mt-1 min-h-[36px] line-clamp-2 text-sm font-black leading-[18px] text-slate-950 transition-colors hover:text-orange-600 sm:text-[15px] sm:leading-5">
             {product.name}
           </h3>
@@ -85,7 +102,6 @@ function ProductCard({ product }) {
           </span>
         </div>
 
-        {/* Price left, cart icon right */}
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
           <div className="min-w-0">
             <span className="block text-lg font-black leading-none text-orange-600 sm:text-xl">
