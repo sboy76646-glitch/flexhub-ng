@@ -17,7 +17,7 @@ function HeroBanner() {
       <div className="mx-auto max-w-[1500px] px-3 sm:px-6 lg:px-8">
         <div className="flex items-stretch gap-4 lg:gap-5">
           <aside className="hidden w-[190px] shrink-0 lg:block">
-            <div className="h-[530px] border border-slate-800 bg-slate-950 px-3 py-7">
+            <div className="h-[530px] border border-slate-200 bg-white px-3 py-7 text-slate-900 shadow-sm">
               <nav aria-label="Marketplace navigation">
                 <p className="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
                   Explore FlexHub
@@ -31,7 +31,7 @@ function HeroBanner() {
                         `group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition ${
                           isActive
                             ? "bg-orange-500 text-white"
-                            : "text-slate-300 hover:bg-slate-900 hover:text-white"
+                            : "text-slate-900 hover:bg-slate-100 hover:text-slate-950"
                         }`
                       }
                     >
@@ -42,7 +42,7 @@ function HeroBanner() {
                             className={
                               isActive
                                 ? "text-white"
-                                : "text-slate-500 group-hover:text-orange-400"
+                                : "text-slate-600 group-hover:text-orange-500"
                             }
                           />
                           <span>{label}</span>
@@ -52,11 +52,11 @@ function HeroBanner() {
                   ))}
                 </div>
 
-                <div className="mx-3 my-6 border-t border-slate-800" />
+                <div className="mx-3 my-6 border-t border-slate-200" />
 
                 <Link
                   to="/sell"
-                  className="mx-1 flex items-center justify-center rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-3 text-center text-xs font-bold text-orange-400 transition hover:bg-orange-500 hover:text-white"
+                  className="mx-1 flex items-center justify-center rounded-lg border border-orange-500/30 bg-orange-50 px-3 py-3 text-center text-xs font-bold text-orange-600 transition hover:bg-orange-500 hover:text-white"
                 >
                   Sell on FlexHub
                 </Link>
