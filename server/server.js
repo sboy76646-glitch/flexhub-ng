@@ -17,6 +17,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import payoutRoutes from "./routes/payoutRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 import storeRoutes from "./routes/storeRoutes.js";
 import { createRateLimiter } from "./middleware/rateLimitMiddleware.js";
 
@@ -55,118 +56,55 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "http://localhost:5180",
   "http://127.0.0.1:5180",
-
   "https://flexhub-ng.netlify.app",
-
   "https://flexhub-ng-phi.vercel.app",
   "https://flexhub-ng-flexhubng.vercel.app",
   "https://flexhub-ng-git-main-flexhubng.vercel.app",
-
   "https://flex-hub.com.ng",
   "https://www.flex-hub.com.ng",
-
   process.env.CLIENT_URL,
-]
-  .filter(Boolean)
-  .map((origin) =>
-    origin.replace(/\/+$/, "")
-  );
+].filter(Boolean).map((origin) => origin.replace(/\/+$/, ""));
 
 function isAllowedOrigin(origin) {
-  if (!origin) {
-    return true;
-  }
-
-  const normalizedOrigin =
-    origin.replace(/\/+$/, "");
-
+  if (!origin) return true;
+  const normalizedOrigin = origin.replace(/\/+$/, "");
   return (
-    allowedOrigins.includes(
-      normalizedOrigin
-    ) ||
-    normalizedOrigin.endsWith(
-      "--flexhub-ng.netlify.app"
-    ) ||
-    normalizedOrigin.endsWith(
-      "-flexhubng.vercel.app"
-    )
+    allowedOrigins.includes(normalizedOrigin) ||
+    normalizedOrigin.endsWith("--flexhub-ng.netlify.app") ||
+    normalizedOrigin.endsWith("-flexhubng.vercel.app")
   );
 }
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (isAllowedOrigin(origin)) {
-        return callback(null, true);
-      }
-
-      console.error(
-        "❌ Blocked CORS origin:",
-        origin
-      );
-
-      return callback(
-        new Error(
-          `CORS blocked this origin: ${origin}`
-        )
-      );
-    },
-
-    credentials: true,
-
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-      "OPTIONS",
-    ],
-
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Idempotency-Key",
-    ],
-
-    optionsSuccessStatus: 204,
-  })
-);
+app.use(cors({
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    console.error("❌ Blocked CORS origin:", origin);
+    return callback(new Error(`CORS blocked this origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Idempotency-Key"],
+  optionsSuccessStatus: 204,
+}));
 
 app.post(
   "/api/payments/paystack/webhook",
-  express.raw({
-    type: "application/json",
-  }),
+  express.raw({ type: "application/json" }),
   handlePaystackWebhook
 );
 
-app.use(
-  express.json({
-    limit: "1mb",
-  })
-);
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "1mb",
-  })
-);
-
-app.get("/", (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message:
-      "FlexHub NG API is running.",
-    timestamp: new Date().toISOString(),
-  });
-});
+app.get("/", (req, res) => res.status(200).json({
+  success: true,
+  message: "FlexHub NG API is running.",
+  timestamp: new Date().toISOString(),
+}));
 
 app.get("/api/health", (req, res) => {
   const email = getEmailServiceStatus();
   const paystackConfigured = Boolean(process.env.PAYSTACK_SECRET_KEY?.trim());
-
   return res.status(200).json({
     success: true,
     status: email.configured && paystackConfigured ? "healthy" : "degraded",
@@ -183,12 +121,14 @@ app.get("/api/health", (req, res) => {
 const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 30, scope: "auth", message: "Too many authentication attempts. Please wait and try again." });
 const aiLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 20, scope: "ai", message: "AI request limit reached. Please wait a moment." });
 const paymentLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 30, scope: "payments", message: "Too many payment requests. Please wait and try again." });
+const recommendationLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 60, scope: "recommendations", message: "Too many recommendation requests. Please wait a moment." });
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/ai", aiLimiter, aiRoutes);
 app.use("/api/stores", storeRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/recommendations", recommendationLimiter, recommendationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/bank-transfers", paymentLimiter, bankTransferRoutes);
@@ -197,107 +137,48 @@ app.use("/api/payouts", payoutRoutes);
 app.use("/api/gmail", gmailRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 
-app.use((req, res) => {
-  return res.status(404).json({
+app.use((req, res) => res.status(404).json({ success: false, message: "API route not found." }));
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  console.error("❌ Unhandled API error:", error);
+  const isCorsError = error.message?.includes("CORS");
+  return res.status(isCorsError ? 403 : 500).json({
     success: false,
-    message: "API route not found.",
+    message: isCorsError ? "This website is not permitted to access the server." : "The server could not complete this request.",
+    requestId: req.requestId,
   });
 });
 
-app.use((error, req, res, next) => {
-  if (res.headersSent) {
-    return next(error);
-  }
-
-  console.error(
-    "❌ Unhandled API error:",
-    error
-  );
-
-  const isCorsError =
-    error.message?.includes("CORS");
-
-  return res
-    .status(isCorsError ? 403 : 500)
-    .json({
-      success: false,
-      message: isCorsError
-        ? "This website is not permitted to access the server."
-        : "The server could not complete this request.",
-      requestId: req.requestId,
-    });
-});
-
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 function validateProductionConfiguration() {
   const warnings = [];
   const clientUrl = process.env.CLIENT_URL?.trim();
-
-  if (!process.env.JWT_SECRET?.trim() || process.env.JWT_SECRET === "replace-with-a-long-random-secret") {
-    warnings.push("JWT_SECRET must be set to a long, unique production secret.");
-  }
-
-  if (!clientUrl) {
-    warnings.push("CLIENT_URL is missing; Paystack callbacks will default to localhost.");
-  } else if (process.env.NODE_ENV === "production" && !clientUrl.startsWith("https://")) {
-    warnings.push("CLIENT_URL should use HTTPS in production.");
-  }
-
-  if (!process.env.PAYSTACK_SECRET_KEY?.trim()) {
-    warnings.push("PAYSTACK_SECRET_KEY is missing; checkout payments are unavailable.");
-  }
-
-  for (const warning of warnings) {
-    console.warn(`⚠️ Configuration: ${warning}`);
-  }
+  if (!process.env.JWT_SECRET?.trim() || process.env.JWT_SECRET === "replace-with-a-long-random-secret") warnings.push("JWT_SECRET must be set to a long, unique production secret.");
+  if (!clientUrl) warnings.push("CLIENT_URL is missing; Paystack callbacks will default to localhost.");
+  else if (process.env.NODE_ENV === "production" && !clientUrl.startsWith("https://")) warnings.push("CLIENT_URL should use HTTPS in production.");
+  if (!process.env.PAYSTACK_SECRET_KEY?.trim()) warnings.push("PAYSTACK_SECRET_KEY is missing; checkout payments are unavailable.");
+  for (const warning of warnings) console.warn(`⚠️ Configuration: ${warning}`);
 }
 
 async function startServer() {
   try {
     validateProductionConfiguration();
     await connectDatabase();
-
-    console.log(
-      "✅ Database connection established."
-    );
-
-    verifyEmailTransporter().catch(
-      (error) => {
-        console.error(
-          "Email verification startup error:",
-          error
-        );
-      }
-    );
-
+    console.log("✅ Database connection established.");
+    verifyEmailTransporter().catch((error) => console.error("Email verification startup error:", error));
     startAutomatedPayouts();
-
-    const server = app.listen(
-      PORT,
-      "0.0.0.0",
-      () => {
-        console.log(
-          `✅ Server running on port ${PORT}`
-        );
-      }
-    );
-
+    const server = app.listen(PORT, "0.0.0.0", () => console.log(`✅ Server running on port ${PORT}`));
     const shutdown = (signal) => {
       console.log(`\n${signal} received. Closing FlexHub NG safely...`);
       server.close(() => process.exit(0));
       setTimeout(() => process.exit(1), 10000).unref();
     };
-
     process.once("SIGTERM", () => shutdown("SIGTERM"));
     process.once("SIGINT", () => shutdown("SIGINT"));
   } catch (error) {
-    console.error(
-      "❌ Failed to start server:",
-      error
-    );
-
+    console.error("❌ Failed to start server:", error);
     process.exit(1);
   }
 }
