@@ -8,11 +8,10 @@ import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { apiRequest } from "../../lib/api";
 
-const navItems = [
+const publicNavItems = [
   ["Home", "/"],
   ["Shop", "/shop"],
   ["Mini-stores", "/stores"],
-  ["Sell", "/sell"],
 ];
 
 function Navbar() {
@@ -24,22 +23,36 @@ function Navbar() {
   const [search, setSearch] = useState("");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-
   useEffect(() => {
     if (!token) return undefined;
+
     let cancelled = false;
-    const load = () => apiRequest("/api/notifications?limit=1", { token })
-      .then((data) => { if (!cancelled) setUnreadNotifications(data.unreadCount || 0); })
-      .catch(() => {});
+
+    const load = () =>
+      apiRequest("/api/notifications?limit=1", { token })
+        .then((data) => {
+          if (!cancelled) {
+            setUnreadNotifications(data.unreadCount || 0);
+          }
+        })
+        .catch(() => {});
+
     load();
     window.addEventListener("flexhub:notifications-updated", load);
+
     return () => {
       cancelled = true;
       window.removeEventListener("flexhub:notifications-updated", load);
     };
   }, [token]);
 
-  const hasSellerWorkspace = ["seller", "seller_pending"].includes(user?.role);
+  const hasSellerWorkspace = ["seller", "seller_pending"].includes(
+    user?.role
+  );
+
+  const navItems = user
+    ? [...publicNavItems, ["Sell", "/sell"]]
+    : publicNavItems;
 
   function handleSearch(event) {
     event.preventDefault();
@@ -49,68 +62,250 @@ function Navbar() {
   }
 
   const navClass = ({ isActive }) =>
-    `transition hover:text-orange-400 ${isActive ? "text-orange-400" : "text-slate-300"}`;
+    `transition hover:text-orange-400 ${
+      isActive ? "text-orange-400" : "text-slate-300"
+    }`;
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/95 shadow-lg backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex h-16 items-center gap-4">
-          <Link to="/" className="shrink-0" aria-label="FlexHub NG marketplace home">
+          <Link
+            to="/"
+            className="shrink-0"
+            aria-label="FlexHub NG marketplace home"
+          >
             <BrandLogo textClassName="hidden text-xl sm:inline-flex" />
           </Link>
 
-          <form onSubmit={handleSearch} className="hidden min-w-0 flex-1 items-center rounded-xl border border-slate-800 bg-slate-900 px-4 focus-within:border-orange-500 md:flex lg:max-w-md">
+          <form
+            onSubmit={handleSearch}
+            className="hidden min-w-0 flex-1 items-center rounded-xl border border-slate-800 bg-slate-900 px-4 focus-within:border-orange-500 md:flex lg:max-w-md"
+          >
             <Search size={18} className="shrink-0 text-slate-400" />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} type="search" aria-label="Search marketplace" placeholder="Search products or stores" className="min-w-0 flex-1 bg-transparent px-3 py-2 text-white outline-none placeholder:text-slate-500" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              type="search"
+              aria-label="Search marketplace"
+              placeholder="Search products or stores"
+              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-white outline-none placeholder:text-slate-500"
+            />
           </form>
 
-          <nav className="ml-auto hidden items-center gap-6 text-sm font-semibold lg:flex" aria-label="Main navigation">
-            {navItems.map(([label, path]) => <NavLink key={path} to={path} className={navClass}>{label}</NavLink>)}
-            {hasSellerWorkspace && <NavLink to="/seller" className={navClass}>Seller dashboard</NavLink>}
-            {user?.role === "admin" && <NavLink to="/admin/marketplace" className={navClass}>Admin</NavLink>}
+          <nav
+            className="ml-auto hidden items-center gap-6 text-sm font-semibold lg:flex"
+            aria-label="Main navigation"
+          >
+            {navItems.map(([label, path]) => (
+              <NavLink key={path} to={path} className={navClass}>
+                {label}
+              </NavLink>
+            ))}
+            {hasSellerWorkspace && (
+              <NavLink to="/seller" className={navClass}>
+                Seller dashboard
+              </NavLink>
+            )}
+            {user?.role === "admin" && (
+              <NavLink to="/admin/marketplace" className={navClass}>
+                Admin
+              </NavLink>
+            )}
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-3 lg:ml-2">
-            {user && <Link to="/notifications" aria-label={`${unreadNotifications} unread notifications`} className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400">
-              <Bell size={21} />
-              {unreadNotifications > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
-            </Link>}
-            <Link to="/wishlist" aria-label={`Wishlist with ${wishlistCount} items`} className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400">
+            {user && (
+              <Link
+                to="/notifications"
+                aria-label={`${unreadNotifications} unread notifications`}
+                className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400"
+              >
+                <Bell size={21} />
+                {unreadNotifications > 0 && (
+                  <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            <Link
+              to="/wishlist"
+              aria-label={`Wishlist with ${wishlistCount} items`}
+              className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400"
+            >
               <Heart size={21} />
-              {wishlistCount > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">{wishlistCount}</span>}
+              {wishlistCount > 0 && (
+                <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
-            <Link to="/cart" aria-label={`Cart with ${cartCount} items`} className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400">
+
+            <Link
+              to="/cart"
+              aria-label={`Cart with ${cartCount} items`}
+              className="relative rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400"
+            >
               <ShoppingCart size={21} />
-              {cartCount > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">{cartCount}</span>}
+              {cartCount > 0 && (
+                <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
             {user ? (
               <>
-                <Link to="/profile" aria-label="Your account" className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 font-bold text-white">{user.firstName?.charAt(0) || user.name?.charAt(0) || "U"}</Link>
-                <button type="button" onClick={logout} aria-label="Log out" className="hidden rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-red-400 sm:block"><LogOut size={20} /></button>
+                <Link
+                  to="/profile"
+                  aria-label="Your account"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 font-bold text-white"
+                >
+                  {user.firstName?.charAt(0) || user.name?.charAt(0) || "U"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  aria-label="Log out"
+                  className="hidden rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-red-400 sm:block"
+                >
+                  <LogOut size={20} />
+                </button>
               </>
             ) : (
-              <Link to="/login" aria-label="Log in" className="rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400 sm:hidden"><User size={21} /></Link>
+              <Link
+                to="/login"
+                aria-label="Log in"
+                className="rounded-lg p-2 text-white transition hover:bg-slate-800 hover:text-orange-400 sm:hidden"
+              >
+                <User size={21} />
+              </Link>
             )}
 
-            {!user && <Link to="/register" className="hidden rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600 sm:inline-flex">Create account</Link>}
-            <button type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label="Toggle navigation" className="rounded-lg p-2 text-white hover:bg-slate-800 lg:hidden">{menuOpen ? <X size={23} /> : <Menu size={23} />}</button>
+            {!user && (
+              <Link
+                to="/register"
+                className="hidden rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600 sm:inline-flex"
+              >
+                Create account
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              aria-expanded={menuOpen}
+              aria-label="Toggle navigation"
+              className="rounded-lg p-2 text-white hover:bg-slate-800 lg:hidden"
+            >
+              {menuOpen ? <X size={23} /> : <Menu size={23} />}
+            </button>
           </div>
         </div>
 
         {menuOpen && (
           <div className="border-t border-slate-800 py-4 lg:hidden">
-            <form onSubmit={handleSearch} className="flex items-center rounded-xl border border-slate-800 bg-slate-900 px-4 md:hidden">
+            <form
+              onSubmit={handleSearch}
+              className="flex items-center rounded-xl border border-slate-800 bg-slate-900 px-4 md:hidden"
+            >
               <Search size={18} className="text-slate-400" />
-              <input value={search} onChange={(event) => setSearch(event.target.value)} type="search" placeholder="Search products or stores" className="min-w-0 flex-1 bg-transparent px-3 py-3 text-white outline-none" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                type="search"
+                placeholder="Search products or stores"
+                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-white outline-none"
+              />
             </form>
-            <nav className="mt-3 grid gap-1" aria-label="Mobile navigation">
-              {navItems.map(([label, path]) => <NavLink key={path} to={path} onClick={() => setMenuOpen(false)} className={({ isActive }) => `rounded-xl px-4 py-3 font-semibold ${isActive ? "bg-orange-500/10 text-orange-400" : "text-slate-300 hover:bg-slate-900"}`}>{label}</NavLink>)}
-              {hasSellerWorkspace && <NavLink to="/seller" onClick={() => setMenuOpen(false)} className={({ isActive }) => `rounded-xl px-4 py-3 font-semibold ${isActive ? "bg-orange-500/10 text-orange-400" : "text-slate-300 hover:bg-slate-900"}`}>Seller dashboard</NavLink>}
-              {user?.role === "admin" && <NavLink to="/admin/marketplace" onClick={() => setMenuOpen(false)} className={({ isActive }) => `rounded-xl px-4 py-3 font-semibold ${isActive ? "bg-orange-500/10 text-orange-400" : "text-slate-300 hover:bg-slate-900"}`}>Marketplace admin</NavLink>}
-              {user ? <button type="button" onClick={logout} className="flex items-center gap-2 rounded-xl px-4 py-3 text-left font-semibold text-red-400 hover:bg-slate-900"><LogOut size={18} />Log out</button> : <Link to="/login" className="rounded-xl px-4 py-3 font-semibold text-slate-300 hover:bg-slate-900">Log in</Link>}
+
+            <nav
+              className="mt-3 grid gap-1"
+              aria-label="Mobile navigation"
+            >
+              {navItems.map(([label, path]) => (
+                <NavLink
+                  key={path}
+                  to={path}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `rounded-xl px-4 py-3 font-semibold ${
+                      isActive
+                        ? "bg-orange-500/10 text-orange-400"
+                        : "text-slate-300 hover:bg-slate-900"
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+
+              {hasSellerWorkspace && (
+                <NavLink
+                  to="/seller"
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `rounded-xl px-4 py-3 font-semibold ${
+                      isActive
+                        ? "bg-orange-500/10 text-orange-400"
+                        : "text-slate-300 hover:bg-slate-900"
+                    }`
+                  }
+                >
+                  Seller dashboard
+                </NavLink>
+              )}
+
+              {user?.role === "admin" && (
+                <NavLink
+                  to="/admin/marketplace"
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `rounded-xl px-4 py-3 font-semibold ${
+                      isActive
+                        ? "bg-orange-500/10 text-orange-400"
+                        : "text-slate-300 hover:bg-slate-900"
+                    }`
+                  }
+                >
+                  Marketplace admin
+                </NavLink>
+              )}
+
+              {user ? (
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex items-center gap-2 rounded-xl px-4 py-3 text-left font-semibold text-red-400 hover:bg-slate-900"
+                >
+                  <LogOut size={18} />
+                  Log out
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl px-4 py-3 font-semibold text-slate-300 hover:bg-slate-900"
+                >
+                  Log in
+                </Link>
+              )}
             </nav>
-            <Link to={hasSellerWorkspace ? "/seller" : "/sell"} className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-orange-500 px-4 py-3 font-bold text-orange-400"><Store size={18} />{hasSellerWorkspace ? "Open seller workspace" : "Open a mini-store"}</Link>
+
+            {user && (
+              <Link
+                to={hasSellerWorkspace ? "/seller" : "/sell"}
+                onClick={() => setMenuOpen(false)}
+                className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-orange-500 px-4 py-3 font-bold text-orange-400"
+              >
+                <Store size={18} />
+                {hasSellerWorkspace
+                  ? "Open seller workspace"
+                  : "Create a mini-store"}
+              </Link>
+            )}
           </div>
         )}
       </div>

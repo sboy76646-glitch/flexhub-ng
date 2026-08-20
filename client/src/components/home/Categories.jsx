@@ -15,10 +15,7 @@ function Categories() {
           </p>
 
           <h2 className="mt-4 text-4xl font-black text-slate-950 sm:text-5xl">
-            Explore Our{" "}
-            <span className="brand-gradient-text">
-              Categories
-            </span>
+            Explore Our <span className="brand-gradient-text">Categories</span>
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-slate-600">
@@ -26,35 +23,35 @@ function Categories() {
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
-          {categories.map((category) => {
-            const Icon = category.icon;
+        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/shop?category=${encodeURIComponent(category.name)}`}
+              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg"
+            >
+              <div className="aspect-square overflow-hidden bg-slate-100">
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+              </div>
 
-            return (
-              <Link
-                key={category.id}
-                to={`/shop?category=${encodeURIComponent(category.name)}`}
-                className="category-card"
-              >
-                <div className="category-icon">
-                  <Icon size={32} />
-                </div>
-
-                <h3 className="mt-5 font-bold text-slate-950">
+              <div className="flex items-center justify-between gap-2 px-3.5 py-3.5">
+                <h3 className="truncate text-sm font-bold text-slate-950 sm:text-[15px]">
                   {category.name}
                 </h3>
 
-                <div className="mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-orange-400">
-                  Shop now
-
-                  <ArrowUpRight
-                    size={15}
-                    className="category-arrow"
-                  />
-                </div>
-              </Link>
-            );
-          })}
+                <ArrowUpRight
+                  size={17}
+                  className="shrink-0 text-orange-500 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

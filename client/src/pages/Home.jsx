@@ -35,17 +35,17 @@ function Home() {
     <Layout>
       <HeroBanner />
 
-      <MarketplaceIntro />
+      <Categories />
 
       {marketplaceProducts.length > 0 && (
         <FlashDeals products={marketplaceProducts} />
       )}
 
-      <Categories />
-
       <FeaturedProducts products={marketplaceProducts} />
+
+      <MarketplaceIntro />
     </Layout>
   );
 }
 
-export default Home; 
+export default Home;

@@ -1,43 +1,34 @@
-import {
-  Smartphone,
-  Laptop,
-  Headphones,
-  Shirt,
-  Watch,
-  Gamepad2,
-} from "lucide-react";
-
 const categories = [
   {
     id: 1,
     name: "Phones",
-    icon: Smartphone,
+    image: "/category-phones.jpg",
   },
   {
     id: 2,
     name: "Laptops",
-    icon: Laptop,
+    image: "/category-laptops.jpg",
   },
   {
     id: 3,
     name: "Audio",
-    icon: Headphones,
+    image: "/category-audio.jpg",
   },
   {
     id: 4,
     name: "Fashion",
-    icon: Shirt,
+    image: "/category-fashion.jpg",
   },
   {
     id: 5,
     name: "Smart Watches",
-    icon: Watch,
+    image: "/category-smart-watches.jpg",
   },
   {
     id: 6,
     name: "Gaming",
-    icon: Gamepad2,
+    image: "/category-gaming.jpg",
   },
 ];
 
-export default categories; 
+export default categories;
