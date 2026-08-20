@@ -6,6 +6,7 @@ import FlashDeals from "../components/home/FlashDeals";
 import Categories from "../components/home/Categories";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import MarketplaceIntro from "../components/home/MarketplaceIntro";
+import ProductDiscovery from "../components/home/ProductDiscovery";
 import { apiRequest } from "../lib/api";
 
 function Home() {
@@ -42,6 +43,8 @@ function Home() {
       )}
 
       <FeaturedProducts products={marketplaceProducts} />
+
+      <ProductDiscovery products={marketplaceProducts} />
 
       <MarketplaceIntro />
     </Layout>
