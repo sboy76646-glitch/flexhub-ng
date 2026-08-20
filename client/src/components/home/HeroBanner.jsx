@@ -15,9 +15,9 @@ function HeroBanner() {
   return (
     <section className="bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-[1500px] px-3 py-3 sm:px-6 lg:px-8 lg:py-4">
-        <div className="flex items-stretch gap-5 lg:gap-7">
+        <div className="flex items-stretch gap-4 lg:gap-4">
           <aside className="hidden w-[250px] shrink-0 lg:block xl:w-[270px]">
-            <div className="h-[530px] border border-black bg-white px-5 py-8 text-slate-900 shadow-sm">
+            <div className="h-[530px] rounded-lg border border-black bg-white px-5 py-8 text-slate-900 shadow-sm">
               <nav aria-label="Marketplace navigation">
                 <p className="px-3 pb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                   Explore FlexHub
@@ -55,7 +55,7 @@ function HeroBanner() {
             </div>
           </aside>
 
-          <div className="relative h-[530px] min-w-0 flex-1 overflow-hidden bg-slate-950">
+          <div className="relative h-[530px] min-w-0 flex-1 overflow-hidden rounded-lg bg-slate-950">
             <Hero />
 
             <div className="relative z-10 flex h-full items-center px-5 py-12 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
