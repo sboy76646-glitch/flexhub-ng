@@ -1,6 +1,5 @@
 import {
   Bell,
-  ChevronDown,
   Heart,
   LogOut,
   Menu,
@@ -63,10 +62,6 @@ function Navbar() {
 
   const hasSellerWorkspace = ["seller", "seller_pending"].includes(user?.role);
 
-  const navItems = user
-    ? [...publicNavItems, ["Sell on FlexHub", "/sell"]]
-    : publicNavItems;
-
   function handleSearch(event) {
     event.preventDefault();
     const query = search.trim();
@@ -75,112 +70,117 @@ function Navbar() {
     navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
   }
 
-  const navClass = ({ isActive }) =>
-    `relative whitespace-nowrap py-5 text-sm font-semibold transition after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-orange-500 after:transition-transform hover:text-slate-950 hover:after:scale-x-100 ${
-      isActive ? "text-slate-950 after:scale-x-100" : "text-slate-600"
-    }`;
-
   const mobileNavClass = ({ isActive }) =>
     `rounded-xl px-4 py-3 text-sm font-semibold transition ${
       isActive ? "bg-orange-50 text-orange-600" : "text-slate-700 hover:bg-slate-50"
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b-[3px] border-slate-900 bg-white shadow-[0_3px_10px_rgba(15,23,42,0.12)]">
-      <div className="mx-auto max-w-7xl px-3 sm:px-6">
-        <div className="flex min-h-[68px] items-center gap-2 sm:min-h-[72px] sm:gap-5">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-[0_2px_10px_rgba(15,23,42,0.06)] backdrop-blur">
+      <div className="mx-auto max-w-[1500px] px-3 sm:px-6 lg:px-8">
+        <div className="flex min-h-[58px] items-center gap-2 sm:min-h-[64px] sm:gap-4">
           <Link to="/" className="shrink-0" aria-label="FlexHub NG marketplace home">
             <BrandLogo
               theme="light"
-              markClassName="h-9 w-9 sm:h-11 sm:w-11"
-              textClassName="inline-flex text-base sm:text-xl"
+              markClassName="h-8 w-8 sm:h-9 sm:w-9"
+              textClassName="inline-flex text-sm sm:text-lg"
             />
           </Link>
 
           <form
             onSubmit={handleSearch}
-            className="hidden min-w-0 flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 md:flex lg:max-w-xl"
+            className="hidden min-w-0 flex-1 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 md:flex lg:max-w-2xl"
           >
-            <Search size={19} className="shrink-0 text-slate-400" />
+            <Search size={18} className="shrink-0 text-slate-400" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               type="search"
               aria-label="Search marketplace"
               placeholder="Search phones, laptops, fashion, gaming..."
-              className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             />
             <button type="submit" className="hidden rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-orange-500 lg:block">
               Search
             </button>
           </form>
 
-          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5">
             <button
               type="button"
               onClick={() => setMobileSearchOpen((value) => !value)}
               aria-expanded={mobileSearchOpen}
               aria-label={mobileSearchOpen ? "Close search" : "Search FlexHub NG"}
-              className="rounded-xl p-2.5 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600 md:hidden"
+              className="rounded-xl p-2 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600 md:hidden"
             >
-              {mobileSearchOpen ? <X size={21} /> : <Search size={21} />}
+              {mobileSearchOpen ? <X size={20} /> : <Search size={20} />}
             </button>
 
             {user && (
               <Link
                 to="/notifications"
                 aria-label={`${unreadNotifications} unread notifications`}
-                className="relative hidden rounded-xl p-2.5 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600 sm:block"
+                className="relative hidden rounded-xl p-2 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600 sm:block"
               >
-                <Bell size={20} />
+                <Bell size={19} />
                 {unreadNotifications > 0 && (
-                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                  <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                     {unreadNotifications > 99 ? "99+" : unreadNotifications}
                   </span>
                 )}
               </Link>
             )}
 
-            <Link to="/wishlist" aria-label={`Wishlist with ${wishlistCount} items`} className="relative rounded-xl p-2.5 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600">
+            <Link to="/wishlist" aria-label={`Wishlist with ${wishlistCount} items`} className="relative rounded-xl p-2 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600">
               <Heart size={20} />
               {wishlistCount > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">{wishlistCount}</span>
+                <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">{wishlistCount}</span>
               )}
             </Link>
 
-            <Link to="/cart" aria-label={`Cart with ${cartCount} items`} className="relative rounded-xl p-2.5 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600">
-              <ShoppingCart size={21} />
+            <Link to="/cart" aria-label={`Cart with ${cartCount} items`} className="relative rounded-xl p-2 text-slate-600 transition hover:bg-orange-50 hover:text-orange-600">
+              <ShoppingCart size={20} />
               {cartCount > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">{cartCount}</span>
+                <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">{cartCount}</span>
               )}
             </Link>
 
             {user ? (
-              <Link to="/profile" aria-label="Your account" className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white ring-2 ring-orange-100 transition hover:ring-orange-200">
+              <Link to="/profile" aria-label="Your account" className="ml-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white ring-2 ring-orange-100 transition hover:ring-orange-200">
                 {user.firstName?.charAt(0) || user.name?.charAt(0) || "U"}
               </Link>
             ) : (
-              <Link to="/login" aria-label="Log in" className="hidden items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:inline-flex">
-                <User size={19} />
+              <Link to="/login" aria-label="Log in" className="hidden items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:inline-flex">
+                <User size={18} />
                 <span>Log in</span>
               </Link>
             )}
 
             {!user && (
-              <Link to="/register" className="hidden rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md sm:inline-flex">
+              <Link to="/register" className="hidden rounded-xl bg-orange-500 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md sm:inline-flex">
                 Create account
               </Link>
             )}
 
-            <button type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label="Toggle navigation" className="rounded-xl p-2.5 text-slate-700 transition hover:bg-slate-50 lg:hidden">
-              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {user && (
+              <Link
+                to={hasSellerWorkspace ? "/seller" : "/sell"}
+                className="hidden items-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 transition hover:bg-orange-100 lg:inline-flex"
+              >
+                <Store size={14} />
+                {hasSellerWorkspace ? "My Store" : "Sell"}
+              </Link>
+            )}
+
+            <button type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label="Toggle navigation" className="rounded-xl p-2 text-slate-700 transition hover:bg-slate-50 lg:hidden">
+              {menuOpen ? <X size={21} /> : <Menu size={21} />}
             </button>
           </div>
         </div>
 
         {mobileSearchOpen && (
           <div className="border-t border-slate-100 py-3 md:hidden">
-            <form onSubmit={handleSearch} className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10">
+            <form onSubmit={handleSearch} className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10">
               <Search size={18} className="shrink-0 text-slate-400" />
               <input
                 autoFocus
@@ -196,35 +196,13 @@ function Navbar() {
           </div>
         )}
 
-        <div className="hidden items-center justify-between border-t border-slate-100 lg:flex">
-          <nav className="flex items-center gap-7" aria-label="Main navigation">
-            {navItems.map(([label, path]) => (
-              <NavLink key={`${label}-${path}`} to={path} className={navClass}>{label}</NavLink>
-            ))}
-            {hasSellerWorkspace && <NavLink to="/seller" className={navClass}>Seller Dashboard</NavLink>}
-            {user?.role === "admin" && <NavLink to="/admin/marketplace" className={navClass}>Admin</NavLink>}
-          </nav>
-
-          {user ? (
-            <div className="flex items-center gap-3 py-2">
-              <Link to={hasSellerWorkspace ? "/seller" : "/sell"} className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 transition hover:border-orange-300 hover:bg-orange-100">
-                <Store size={15} />
-                {hasSellerWorkspace ? "My Store" : "Create a Mini Store"}
-              </Link>
-              <button type="button" onClick={logout} aria-label="Log out" className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"><LogOut size={18} /></button>
-            </div>
-          ) : (
-            <span className="flex items-center gap-1 text-xs font-medium text-slate-400">Shop with confidence <ChevronDown size={13} /></span>
-          )}
-        </div>
-
         {menuOpen && (
           <div className="border-t border-slate-100 py-4 lg:hidden">
             <nav className="grid gap-1" aria-label="Mobile navigation">
-              {navItems.map(([label, path]) => (
+              {publicNavItems.map(([label, path]) => (
                 <NavLink key={`${label}-${path}`} to={path} onClick={() => setMenuOpen(false)} className={mobileNavClass}>{label}</NavLink>
               ))}
-              {hasSellerWorkspace && <NavLink to="/seller" onClick={() => setMenuOpen(false)} className={mobileNavClass}>Seller Dashboard</NavLink>}
+              {user && <NavLink to={hasSellerWorkspace ? "/seller" : "/sell"} onClick={() => setMenuOpen(false)} className={mobileNavClass}>{hasSellerWorkspace ? "My Store" : "Sell on FlexHub"}</NavLink>}
               {user?.role === "admin" && <NavLink to="/admin/marketplace" onClick={() => setMenuOpen(false)} className={mobileNavClass}>Marketplace Admin</NavLink>}
               {user ? (
                 <button type="button" onClick={logout} className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-sm font-semibold text-red-500 hover:bg-red-50"><LogOut size={18} /> Log out</button>
@@ -232,13 +210,6 @@ function Navbar() {
                 <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Log in</Link>
               )}
             </nav>
-
-            {user && (
-              <Link to={hasSellerWorkspace ? "/seller" : "/sell"} onClick={() => setMenuOpen(false)} className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600">
-                <Store size={18} />
-                {hasSellerWorkspace ? "Open seller workspace" : "Create a mini-store"}
-              </Link>
-            )}
           </div>
         )}
       </div>
