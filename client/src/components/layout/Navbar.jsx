@@ -157,7 +157,7 @@ function Navbar() {
           </div>
         )}
       </div>
-      <div aria-hidden="true" className="h-2 bg-black" />
+      <div aria-hidden="true" className="h-1 bg-black" />
     </header>
   );
 }
