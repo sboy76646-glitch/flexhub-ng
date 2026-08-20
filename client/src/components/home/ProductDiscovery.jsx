@@ -4,7 +4,7 @@ import ProductCard from "../product/ProductCard";
 import { useAuth } from "../../context/AuthContext";
 import { apiRequest } from "../../lib/api";
 
-const fallbackSections = {
+const sectionTitles = {
   recommended: "Recommended for you",
   trending: "Trending on FlexHub",
   recentlyViewed: "Recently viewed",
@@ -14,8 +14,11 @@ const fallbackSections = {
   alsoLike: "You may also like",
 };
 
+const guestSections = new Set(["trending", "popularNearYou", "newest", "alsoLike"]);
+
 function DiscoverySection({ title, subtitle, products }) {
   if (!products?.length) return null;
+
   return (
     <section className="py-8 sm:py-10">
       <div className="mx-auto max-w-[1500px] px-5 sm:px-6">
@@ -26,7 +29,9 @@ function DiscoverySection({ title, subtitle, products }) {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products.slice(0, 5).map((product) => <ProductCard key={product.id} product={product} />)}
+          {products.slice(0, 5).map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       </div>
     </section>
@@ -39,52 +44,77 @@ function ProductDiscovery() {
   const [location, setLocation] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
-      setSections({});
-      setLocation("");
-      return undefined;
+    let cancelled = false;
+
+    if (isAuthenticated && token) {
+      apiRequest("/api/recommendations", { token, timeout: 15000 })
+        .then((data) => {
+          if (!cancelled) {
+            setSections(data.sections || {});
+            setLocation(data.location || "");
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setSections({});
+            setLocation("");
+          }
+        });
+    } else {
+      // Guests still get useful marketplace discovery from the public product feed.
+      apiRequest("/api/products?limit=40", { timeout: 15000 })
+        .then((data) => {
+          if (!cancelled) {
+            const products = data.products || [];
+            setSections({
+              trending: products,
+              popularNearYou: products,
+              newest: [...products].sort(
+                (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+              ),
+              alsoLike: products,
+            });
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setSections({});
+        });
     }
 
-    let cancelled = false;
-    apiRequest("/api/recommendations", { token, timeout: 15000 })
-      .then((data) => {
-        if (!cancelled) {
-          setSections(data.sections || {});
-          setLocation(data.location || "");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSections({});
-          setLocation("");
-        }
-      });
-
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, token]);
-
-  if (!isAuthenticated) return null;
 
   const subtitles = {
     recommended: "Personalized from your FlexHub browsing activity.",
-    trending: "Products getting the most attention across FlexHub.",
+    trending: isAuthenticated
+      ? "Products getting the most attention across FlexHub."
+      : "Popular products shoppers are discovering on FlexHub.",
     recentlyViewed: "Pick up where you left off.",
-    popularNearYou: location ? `Popular with shoppers around ${location}.` : "Popular products from nearby FlexHub sellers.",
+    popularNearYou: location
+      ? `Popular with shoppers around ${location}.`
+      : "Popular products from FlexHub sellers.",
     newest: "Fresh listings from marketplace sellers.",
     becauseYouViewed: "More products related to what you've been browsing.",
-    alsoLike: "More products selected for your shopping interests.",
+    alsoLike: "More products you might want to explore.",
   };
 
   return (
     <div className="bg-white">
-      {Object.entries(fallbackSections).map(([key, title]) => (
-        <DiscoverySection
-          key={key}
-          title={title}
-          subtitle={subtitles[key]}
-          products={sections[key] || []}
-        />
-      ))}
+      {Object.entries(sectionTitles).map(([key, title]) => {
+        const shouldShow = isAuthenticated || guestSections.has(key);
+        if (!shouldShow) return null;
+
+        return (
+          <DiscoverySection
+            key={key}
+            title={title}
+            subtitle={subtitles[key]}
+            products={sections[key] || []}
+          />
+        );
+      })}
     </div>
   );
 }
