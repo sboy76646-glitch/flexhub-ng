@@ -13,8 +13,8 @@ const heroNavItems = [
 
 function HeroBanner() {
   return (
-    <section className="bg-white text-slate-900">
-      <div className="mx-auto max-w-[1500px] px-3 sm:px-6 lg:px-8">
+    <section className="bg-slate-50 text-slate-900">
+      <div className="mx-auto max-w-[1500px] px-3 py-3 sm:px-6 lg:px-8 lg:py-4">
         <div className="flex items-stretch gap-5 lg:gap-7">
           <aside className="hidden w-[250px] shrink-0 lg:block xl:w-[270px]">
             <div className="h-[530px] border border-slate-200 bg-white px-5 py-8 text-slate-900 shadow-sm">
@@ -60,11 +60,6 @@ function HeroBanner() {
 
             <div className="relative z-10 flex h-full items-center px-5 py-12 sm:px-8 sm:py-14 lg:px-10 lg:py-16">
               <div className="max-w-xl lg:max-w-[550px]">
-                <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-100 backdrop-blur-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                  Your marketplace, your way
-                </p>
-
                 <h1 className="text-[42px] font-black leading-[0.98] tracking-tight text-white sm:text-5xl lg:text-[58px]">
                   Everything you want.
                   <br />
