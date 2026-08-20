@@ -2,14 +2,70 @@ import { ArrowRight, Clock3, Flame, Heart, ShoppingCart, Zap } from "lucide-reac
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import ProductCard from "../product/ProductCard";
-
 function formatPrice(value) {
   return `₦${Number(value || 0).toLocaleString("en-NG")}`;
 }
 
-function DealCard({ product }) {
+function getDealEnd(product, index) {
+  const suppliedEnd =
+    product.flashDealEndsAt ||
+    product.dealEndsAt ||
+    product.saleEndsAt ||
+    product.endsAt ||
+    product.flashSaleEndsAt;
+
+  if (suppliedEnd) {
+    const timestamp = new Date(suppliedEnd).getTime();
+    if (Number.isFinite(timestamp)) return timestamp;
+  }
+
+  if (typeof window !== "undefined") {
+    const key = `flexhub-flash-deal-end:${product._id || product.id || index}`;
+    const saved = Number(window.localStorage.getItem(key));
+    if (Number.isFinite(saved) && saved > Date.now()) return saved;
+
+    const durationSeconds = (90 + index * 43) * 60;
+    const end = Date.now() + durationSeconds * 1000;
+    window.localStorage.setItem(key, String(end));
+    return end;
+  }
+
+  return Date.now() + (90 + index * 43) * 60 * 1000;
+}
+
+function Countdown({ endsAt }) {
+  const [secondsLeft, setSecondsLeft] = useState(() => Math.max(0, Math.floor((endsAt - Date.now()) / 1000)));
+
+  useEffect(() => {
+    const update = () => setSecondsLeft(Math.max(0, Math.floor((endsAt - Date.now()) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [endsAt]);
+
+  const hours = Math.floor(secondsLeft / 3600);
+  const minutes = Math.floor((secondsLeft % 3600) / 60);
+  const seconds = secondsLeft % 60;
+  const urgent = secondsLeft > 0 && secondsLeft <= 15 * 60;
+
+  return (
+    <div className={`mt-3 flex items-center justify-between rounded-xl px-3 py-2 ${urgent ? "bg-orange-50 text-orange-600" : "bg-slate-100 text-slate-600"}`}>
+      <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide">
+        <Clock3 className="h-3.5 w-3.5" />
+        {secondsLeft > 0 ? "Ends in" : "Deal ended"}
+      </span>
+      {secondsLeft > 0 && (
+        <span className="font-mono text-xs font-black tabular-nums">
+          {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function DealCard({ product, index }) {
   const [liked, setLiked] = useState(false);
+  const endsAt = useMemo(() => getDealEnd(product, index), [product, index]);
   const image = product.image || product.images?.[0] || product.imageUrl || "/placeholder-product.jpg";
   const oldPrice = Number(product.oldPrice || 0);
   const price = Number(product.price || 0);
@@ -57,7 +113,8 @@ function DealCard({ product }) {
             <ShoppingCart className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+        <Countdown endsAt={endsAt} />
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
           <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-orange-500 to-red-500" />
         </div>
         <p className="mt-1.5 text-[11px] font-semibold text-slate-500">Selling fast</p>
@@ -69,7 +126,6 @@ function DealCard({ product }) {
 function FlashDeals({ products = [] }) {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(2 * 60 * 60 + 14 * 60 + 37);
   const deals = products
     .filter((product) => product.oldPrice && product.oldPrice > product.price)
     .slice(0, 10);
@@ -85,18 +141,6 @@ function FlashDeals({ products = [] }) {
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setSecondsLeft((current) => (current <= 0 ? 2 * 60 * 60 + 14 * 60 + 37 : current - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const countdown = useMemo(() => {
-    const values = [Math.floor(secondsLeft / 3600), Math.floor((secondsLeft % 3600) / 60), secondsLeft % 60];
-    return values.map((value) => String(value).padStart(2, "0"));
-  }, [secondsLeft]);
 
   if (deals.length === 0) return null;
 
@@ -115,33 +159,17 @@ function FlashDeals({ products = [] }) {
                 <Flame className="h-4 w-4 fill-current" /> Flash sale
               </div>
               <h2 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">Deals that won't wait.</h2>
-              <p className="mt-1 text-sm text-slate-400">Limited-time prices on products shoppers are grabbing fast.</p>
+              <p className="mt-1 text-sm text-slate-400">Every deal has its own expiry time. Grab yours before it disappears.</p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Clock3 className="h-4 w-4 text-orange-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Ends in</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {countdown.map((unit, index) => (
-                <div key={`${unit}-${index}`} className="min-w-[42px] rounded-xl bg-white px-2 py-2 text-center shadow-lg sm:min-w-[48px]">
-                  <span className="text-lg font-black tabular-nums text-slate-950">{unit}</span>
-                  <span className="block text-[9px] font-bold uppercase text-slate-400">{["hrs", "min", "sec"][index]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-white">Today's hottest deals</p>
-            <p className="text-xs text-slate-500">Save more before the timer runs out.</p>
           </div>
           <Link to="/shop" className="inline-flex items-center gap-1.5 text-sm font-bold text-orange-400 transition hover:text-orange-300">
             See all deals <ArrowRight className="h-4 w-4" />
           </Link>
+        </div>
+
+        <div className="mb-5">
+          <p className="text-sm font-bold text-white">Today's hottest deals</p>
+          <p className="text-xs text-slate-500">Watch each product's timer and save before its offer ends.</p>
         </div>
 
         <div className="flex snap-x gap-4 overflow-x-auto pb-3 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-4 xl:grid-cols-5 [&::-webkit-scrollbar]:hidden">
@@ -151,7 +179,7 @@ function FlashDeals({ products = [] }) {
               className={`w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-auto sm:max-w-none transition-[opacity,transform] duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${isVisible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0"}`}
               style={{ transitionDelay: isVisible ? `${150 + index * 70}ms` : "0ms" }}
             >
-              <DealCard product={deal} />
+              <DealCard product={deal} index={index} />
             </div>
           ))}
         </div>
