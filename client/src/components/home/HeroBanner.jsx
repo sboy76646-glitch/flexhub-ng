@@ -13,24 +13,24 @@ const heroNavItems = [
 
 function HeroBanner() {
   return (
-    <section className="bg-slate-950 text-white">
+    <section className="bg-white text-slate-900">
       <div className="mx-auto max-w-[1500px] px-3 sm:px-6 lg:px-8">
-        <div className="flex items-stretch gap-4 lg:gap-5">
-          <aside className="hidden w-[190px] shrink-0 lg:block">
-            <div className="h-[530px] border border-slate-200 bg-white px-3 py-7 text-slate-900 shadow-sm">
+        <div className="flex items-stretch gap-5 lg:gap-7">
+          <aside className="hidden w-[250px] shrink-0 lg:block xl:w-[270px]">
+            <div className="h-[530px] border border-slate-200 bg-white px-5 py-8 text-slate-900 shadow-sm">
               <nav aria-label="Marketplace navigation">
-                <p className="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                <p className="px-3 pb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                   Explore FlexHub
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {heroNavItems.map(({ label, path, icon: Icon }) => (
                     <NavLink
                       key={`${label}-${path}`}
                       to={path}
                       className={({ isActive }) =>
-                        `group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition ${
+                        `group flex items-center gap-4 rounded-xl px-4 py-3.5 text-[15px] font-semibold transition ${
                           isActive
-                            ? "bg-orange-500 text-white"
+                            ? "bg-orange-500 text-white shadow-sm"
                             : "text-slate-900 hover:bg-slate-100 hover:text-slate-950"
                         }`
                       }
@@ -38,7 +38,7 @@ function HeroBanner() {
                       {({ isActive }) => (
                         <>
                           <Icon
-                            size={18}
+                            size={20}
                             className={
                               isActive
                                 ? "text-white"
@@ -65,7 +65,7 @@ function HeroBanner() {
                   Your marketplace, your way
                 </p>
 
-                <h1 className="text-[42px] font-black leading-[0.98] tracking-tight sm:text-5xl lg:text-[58px]">
+                <h1 className="text-[42px] font-black leading-[0.98] tracking-tight text-white sm:text-5xl lg:text-[58px]">
                   Everything you want.
                   <br />
                   <span className="text-orange-500">One place to shop.</span>
