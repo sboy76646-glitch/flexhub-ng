@@ -86,7 +86,7 @@ function Navbar() {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 border-b-[3px] border-slate-900 bg-white shadow-[0_3px_10px_rgba(15,23,42,0.12)]">
       <div className="mx-auto max-w-7xl px-3 sm:px-6">
         <div className="flex min-h-[68px] items-center gap-2 sm:min-h-[72px] sm:gap-5">
           <Link to="/" className="shrink-0" aria-label="FlexHub NG marketplace home">
