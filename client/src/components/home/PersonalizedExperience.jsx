@@ -2,67 +2,57 @@ import { Clock3, Search, Sparkles, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import ProductGrid from "../product/ProductGrid";
-import { useAuth } from "../../context/AuthContext";
 import { usePersonalization } from "../../context/PersonalizationContext";
 
 function PersonalizedExperience({ products = [] }) {
-  const { user } = useAuth();
   const {
     viewedProducts,
     recentSearches,
     favoriteCategories,
     favoriteBrands,
-    averagePrice,
     rankProducts,
   } = usePersonalization();
 
-  const displayName = user?.firstName || user?.name?.split(" ")[0] || "there";
-  const recommendedProducts = rankProducts(products).filter(
-    (product) => !viewedProducts.some((item) => String(item.id) === String(product.id))
-  ).slice(0, 8);
+  const recommendedProducts = rankProducts(products)
+    .filter((product) => !viewedProducts.some((item) => String(item.id) === String(product.id || product._id)))
+    .slice(0, 8);
 
-  if (!viewedProducts.length && !recentSearches.length && !favoriteCategories.length) return null;
+  if (!viewedProducts.length && !recentSearches.length && !favoriteCategories.length && !favoriteBrands.length) {
+    return null;
+  }
 
   return (
     <section className="bg-white py-16 text-slate-900 sm:py-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-orange-600">
-                <Sparkles size={19} />
-                <p className="text-sm font-black uppercase tracking-[0.22em]">Your FlexHub</p>
-              </div>
-              <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                Welcome back, {displayName}.
-              </h2>
-              <p className="mt-2 max-w-2xl text-slate-600">
-                Your recommendations now adapt to the categories, brands and price points you interact with most.
-              </p>
-            </div>
-
-            {averagePrice > 0 && (
-              <div className="rounded-2xl border border-orange-200 bg-white px-4 py-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Typical browsing price</p>
-                <p className="mt-1 text-lg font-black text-orange-600">₦{Math.round(averagePrice).toLocaleString()}</p>
-              </div>
-            )}
+          <div className="flex items-center gap-2 text-orange-600">
+            <Sparkles size={19} />
+            <p className="text-sm font-black uppercase tracking-[0.22em]">Your FlexHub</p>
           </div>
+          <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+            Picks you'll love
+          </h2>
+          <p className="mt-2 max-w-2xl text-slate-600">
+            Discover products selected around the things you explore on FlexHub.
+          </p>
 
           {favoriteCategories.length > 0 && (
-            <div className="mt-7 flex flex-wrap gap-2">
-              {favoriteCategories.map((category) => (
-                <Link key={category} to={`/shop?category=${encodeURIComponent(category)}`} className="rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-bold text-orange-700 transition hover:border-orange-400 hover:bg-orange-50">
-                  {category}
-                </Link>
-              ))}
+            <div className="mt-7">
+              <p className="mb-3 text-sm font-black text-slate-900">Your interests</p>
+              <div className="flex flex-wrap gap-2">
+                {favoriteCategories.map((category) => (
+                  <Link key={category} to={`/shop?category=${encodeURIComponent(category)}`} className="rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-bold text-orange-700 transition hover:border-orange-400 hover:bg-orange-50">
+                    {category}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
 
           {favoriteBrands.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center gap-2 text-sm font-black text-slate-900">
-                <Tag size={17} className="text-orange-500" /> Favorite brands
+                <Tag size={17} className="text-orange-500" /> Brands you explore
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {favoriteBrands.map((brand) => (
@@ -75,7 +65,7 @@ function PersonalizedExperience({ products = [] }) {
           {recentSearches.length > 0 && (
             <div className="mt-8">
               <div className="flex items-center gap-2 text-sm font-black text-slate-900">
-                <Search size={17} className="text-orange-500" /> Recent searches
+                <Search size={17} className="text-orange-500" /> Continue exploring
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {recentSearches.slice(0, 6).map((query) => (
@@ -91,7 +81,7 @@ function PersonalizedExperience({ products = [] }) {
             <div className="mt-10">
               <div className="mb-5 flex items-center gap-2">
                 <Clock3 size={19} className="text-orange-500" />
-                <h3 className="text-xl font-black text-slate-950">Recently viewed</h3>
+                <h3 className="text-xl font-black text-slate-950">Continue exploring</h3>
               </div>
               <ProductGrid products={viewedProducts.slice(0, 4)} />
             </div>
@@ -100,9 +90,9 @@ function PersonalizedExperience({ products = [] }) {
           {recommendedProducts.length > 0 && (
             <div className="mt-12 border-t border-slate-200 pt-10">
               <div className="mb-5">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Intelligent match</p>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">Personalized picks</p>
                 <h3 className="mt-2 text-2xl font-black text-slate-950">Picked for you</h3>
-                <p className="mt-1 text-sm text-slate-500">Ranked from your activity — not a one-size-fits-all product list.</p>
+                <p className="mt-1 text-sm text-slate-500">Products matched to the categories and brands you explore.</p>
               </div>
               <ProductGrid products={recommendedProducts} />
             </div>
