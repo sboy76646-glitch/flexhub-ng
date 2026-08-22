@@ -7,6 +7,7 @@ import Categories from "../components/home/Categories";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import MarketplaceIntro from "../components/home/MarketplaceIntro";
 import ProductDiscovery from "../components/home/ProductDiscovery";
+import PersonalizedExperience from "../components/home/PersonalizedExperience";
 import { apiRequest } from "../lib/api";
 
 function Home() {
@@ -35,6 +36,8 @@ function Home() {
   return (
     <Layout>
       <HeroBanner />
+
+      <PersonalizedExperience products={marketplaceProducts} />
 
       <Categories />
 
