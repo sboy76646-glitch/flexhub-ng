@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import ProductGrid from "../components/product/ProductGrid";
+import { usePersonalization } from "../context/PersonalizationContext";
 import { apiRequest } from "../lib/api";
 
 const PAGE_SIZE = 24;
@@ -17,6 +18,7 @@ function Shop() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const { rankProducts, favoriteCategories } = usePersonalization();
 
   const selectedCategory = searchParams.get("category") || "All";
   const query = (searchParams.get("q") || "").trim();
@@ -27,6 +29,11 @@ function Shop() {
     () => JSON.stringify({ selectedCategory, query, sortBy, inStock }),
     [selectedCategory, query, sortBy, inStock]
   );
+
+  const displayedProducts = useMemo(() => {
+    if (sortBy !== "featured") return products;
+    return rankProducts(products, query);
+  }, [products, rankProducts, query, sortBy]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -40,11 +47,7 @@ function Shop() {
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
-    const params = new URLSearchParams({
-      page: String(page),
-      limit: String(PAGE_SIZE),
-      sort: sortBy,
-    });
+    const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE), sort: sortBy });
 
     if (selectedCategory !== "All") params.set("category", selectedCategory);
     if (query) params.set("q", query);
@@ -103,24 +106,19 @@ function Shop() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {sortBy === "featured" && favoriteCategories.length > 0 && (
+                <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700">
+                  Personalized for you
+                </span>
+              )}
               <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={inStock}
-                  onChange={(event) => updateParam("stock", event.target.checked ? "true" : "")}
-                  className="h-4 w-4 accent-orange-500"
-                />
+                <input type="checkbox" checked={inStock} onChange={(event) => updateParam("stock", event.target.checked ? "true" : "")} className="h-4 w-4 accent-orange-500" />
                 In stock only
               </label>
               <label className="flex items-center gap-3 text-sm font-semibold text-slate-700">
                 Sort by
-                <select
-                  value={sortBy}
-                  onChange={(event) => updateParam("sort", event.target.value, "featured")}
-                  disabled={loading}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-orange-500 disabled:opacity-60"
-                >
-                  <option value="featured">Featured</option>
+                <select value={sortBy} onChange={(event) => updateParam("sort", event.target.value, "featured")} disabled={loading} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-orange-500 disabled:opacity-60">
+                  <option value="featured">Featured for you</option>
                   <option value="newest">Newest</option>
                   <option value="low">Price: Low to High</option>
                   <option value="high">Price: High to Low</option>
@@ -134,12 +132,7 @@ function Shop() {
           {!loading && (
             <div className="mb-10 flex gap-3 overflow-x-auto pb-2" aria-label="Product categories">
               {["All", ...categories].map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => updateParam("category", category === "All" ? "" : category)}
-                  className={`shrink-0 rounded-full px-5 py-2.5 font-semibold transition ${selectedCategory === category ? "bg-orange-500 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-600"}`}
-                >
+                <button key={category} type="button" onClick={() => updateParam("category", category === "All" ? "" : category)} className={`shrink-0 rounded-full px-5 py-2.5 font-semibold transition ${selectedCategory === category ? "bg-orange-500 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-600"}`}>
                   {category}
                 </button>
               ))}
@@ -151,20 +144,12 @@ function Shop() {
               <div className="mx-auto h-11 w-11 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
               <p className="mt-5 font-semibold text-slate-600">Loading marketplace products…</p>
             </div>
-          ) : products.length > 0 ? (
+          ) : displayedProducts.length > 0 ? (
             <>
-              <ProductGrid products={products} />
+              <ProductGrid products={displayedProducts} />
               {pagination.hasMore && (
                 <div className="mt-10 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoadingMore(true);
-                      setPage((current) => current + 1);
-                    }}
-                    disabled={loadingMore}
-                    className="rounded-xl bg-slate-950 px-7 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60"
-                  >
+                  <button type="button" onClick={() => { setLoadingMore(true); setPage((current) => current + 1); }} disabled={loadingMore} className="rounded-xl bg-slate-950 px-7 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60">
                     {loadingMore ? "Loading more…" : "Load more products"}
                   </button>
                 </div>
