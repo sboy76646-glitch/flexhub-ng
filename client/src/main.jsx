@@ -9,44 +9,47 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
+import { PersonalizationProvider } from "./context/PersonalizationContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <WishlistProvider>
-          <CartProvider>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 2500,
-                style: {
-                  background: "#0f172a",
-                  color: "#ffffff",
-                  border: "1px solid #10b981",
-                },
-                success: {
-                  iconTheme: {
-                    primary: "#10b981",
-                    secondary: "#ffffff",
+        <PersonalizationProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 2500,
+                  style: {
+                    background: "#0f172a",
+                    color: "#ffffff",
+                    border: "1px solid #10b981",
                   },
-                },
-                error: {
-                  iconTheme: {
-                    primary: "#ef4444",
-                    secondary: "#ffffff",
+                  success: {
+                    iconTheme: {
+                      primary: "#10b981",
+                      secondary: "#ffffff",
+                    },
                   },
-                },
-              }}
-            />
+                  error: {
+                    iconTheme: {
+                      primary: "#ef4444",
+                      secondary: "#ffffff",
+                    },
+                  },
+                }}
+              />
 
-            <App />
-          </CartProvider>
-        </WishlistProvider>
+              <App />
+            </CartProvider>
+          </WishlistProvider>
+        </PersonalizationProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>
-); 
+);
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
