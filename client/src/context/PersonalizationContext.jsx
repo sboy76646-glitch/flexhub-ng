@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "./AuthContext";
 
@@ -39,6 +39,10 @@ export function PersonalizationProvider({ children }) {
   const { user } = useAuth();
   const storageKey = getStorageKey(user);
   const [profile, setProfile] = useState(() => readProfile(storageKey));
+
+  useEffect(() => {
+    setProfile(readProfile(storageKey));
+  }, [storageKey]);
 
   const updateProfile = useCallback((updater) => {
     setProfile((current) => {
