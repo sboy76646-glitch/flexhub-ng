@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ProductCard from "../product/ProductCard";
 import { useAuth } from "../../context/AuthContext";
+import { usePersonalization } from "../../context/PersonalizationContext";
 import { apiRequest } from "../../lib/api";
 
 const sectionTitles = {
@@ -29,9 +30,7 @@ function DiscoverySection({ title, subtitle, products }) {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products.slice(0, 5).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {products.slice(0, 5).map((product) => <ProductCard key={product.id} product={product} />)}
         </div>
       </div>
     </section>
@@ -40,6 +39,7 @@ function DiscoverySection({ title, subtitle, products }) {
 
 function ProductDiscovery() {
   const { isAuthenticated, token } = useAuth();
+  const { rankProducts } = usePersonalization();
   const [sections, setSections] = useState({});
   const [location, setLocation] = useState("");
 
@@ -61,7 +61,6 @@ function ProductDiscovery() {
           }
         });
     } else {
-      // Guests still get useful marketplace discovery from the public product feed.
       apiRequest("/api/products?limit=40", { timeout: 15000 })
         .then((data) => {
           if (!cancelled) {
@@ -69,9 +68,7 @@ function ProductDiscovery() {
             setSections({
               trending: products,
               popularNearYou: products,
-              newest: [...products].sort(
-                (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-              ),
+              newest: [...products].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
               alsoLike: products,
             });
           }
@@ -81,20 +78,21 @@ function ProductDiscovery() {
         });
     }
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [isAuthenticated, token]);
+
+  const rankedSections = useMemo(() => Object.fromEntries(
+    Object.entries(sections).map(([key, products]) => [
+      key,
+      key === "recentlyViewed" ? products : rankProducts(products || []),
+    ])
+  ), [sections, rankProducts]);
 
   const subtitles = {
     recommended: "Personalized from your FlexHub browsing activity.",
-    trending: isAuthenticated
-      ? "Products getting the most attention across FlexHub."
-      : "Popular products shoppers are discovering on FlexHub.",
+    trending: isAuthenticated ? "Products getting the most attention across FlexHub." : "Popular products shoppers are discovering on FlexHub.",
     recentlyViewed: "Pick up where you left off.",
-    popularNearYou: location
-      ? `Popular with shoppers around ${location}.`
-      : "Popular products from FlexHub sellers.",
+    popularNearYou: location ? `Popular with shoppers around ${location}.` : "Popular products from FlexHub sellers.",
     newest: "Fresh listings from marketplace sellers.",
     becauseYouViewed: "More products related to what you've been browsing.",
     alsoLike: "More products you might want to explore.",
@@ -105,15 +103,7 @@ function ProductDiscovery() {
       {Object.entries(sectionTitles).map(([key, title]) => {
         const shouldShow = isAuthenticated || guestSections.has(key);
         if (!shouldShow) return null;
-
-        return (
-          <DiscoverySection
-            key={key}
-            title={title}
-            subtitle={subtitles[key]}
-            products={sections[key] || []}
-          />
-        );
+        return <DiscoverySection key={key} title={title} subtitle={subtitles[key]} products={rankedSections[key] || []} />;
       })}
     </div>
   );
