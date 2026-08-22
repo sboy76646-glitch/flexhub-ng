@@ -16,6 +16,7 @@ import { BrandLogo } from "../brand/Brand";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { usePersonalization } from "../../context/PersonalizationContext";
 import { apiRequest } from "../../lib/api";
 
 const publicNavItems = [
@@ -30,6 +31,7 @@ function Navbar() {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { user, logout, token } = useAuth();
+  const { recordSearch } = usePersonalization();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -64,6 +66,7 @@ function Navbar() {
   function handleSearch(event) {
     event.preventDefault();
     const query = search.trim();
+    if (query) recordSearch(query);
     setMobileSearchOpen(false);
     setMenuOpen(false);
     navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
