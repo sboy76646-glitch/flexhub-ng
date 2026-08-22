@@ -4,25 +4,14 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
+import { usePersonalization } from "../../context/PersonalizationContext";
 import { apiRequest } from "../../lib/api";
-
-const RECENTLY_VIEWED_KEY = "flexhub_recently_viewed";
-
-function rememberProduct(product) {
-  try {
-    const current = JSON.parse(localStorage.getItem(RECENTLY_VIEWED_KEY) || "[]");
-    const id = String(product.id);
-    const next = [id, ...current.map(String).filter((item) => item !== id)].slice(0, 10);
-    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next));
-  } catch {
-    // Discovery should never block product navigation.
-  }
-}
 
 function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isAuthenticated, token } = useAuth();
+  const { recordProductView } = usePersonalization();
 
   const liked = isInWishlist(product.id);
   const price = Number(product.price || 0);
@@ -43,7 +32,7 @@ function ProductCard({ product }) {
   }
 
   function handleProductView() {
-    rememberProduct(product);
+    recordProductView(product);
     if (isAuthenticated && token && product.id) {
       apiRequest("/api/recommendations/interactions", {
         method: "POST",
