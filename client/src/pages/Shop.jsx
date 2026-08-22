@@ -4,15 +4,16 @@ import { useSearchParams } from "react-router-dom";
 
 import Layout from "../components/layout/Layout";
 import ProductGrid from "../components/product/ProductGrid";
+import categories from "../data/categories";
 import { usePersonalization } from "../context/PersonalizationContext";
 import { apiRequest } from "../lib/api";
 
 const PAGE_SIZE = 24;
+const CANONICAL_CATEGORIES = ["All", ...categories.map((category) => category.name)];
 
 function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, hasMore: false });
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -24,16 +25,24 @@ function Shop() {
   const query = (searchParams.get("q") || "").trim();
   const sortBy = searchParams.get("sort") || "featured";
   const inStock = searchParams.get("stock") === "true";
+  const safeCategory = CANONICAL_CATEGORIES.includes(selectedCategory) ? selectedCategory : "All";
 
   const requestKey = useMemo(
-    () => JSON.stringify({ selectedCategory, query, sortBy, inStock }),
-    [selectedCategory, query, sortBy, inStock]
+    () => JSON.stringify({ safeCategory, query, sortBy, inStock }),
+    [safeCategory, query, sortBy, inStock]
   );
 
   const displayedProducts = useMemo(() => {
     if (sortBy !== "featured") return products;
     return rankProducts(products, query);
   }, [products, rankProducts, query, sortBy]);
+
+  useEffect(() => {
+    if (selectedCategory === safeCategory) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("category");
+    setSearchParams(next, { replace: true });
+  }, [selectedCategory, safeCategory, searchParams, setSearchParams]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -49,18 +58,15 @@ function Shop() {
     const controller = new AbortController();
     const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE), sort: sortBy });
 
-    if (selectedCategory !== "All") params.set("category", selectedCategory);
+    if (safeCategory !== "All") params.set("category", safeCategory);
     if (query) params.set("q", query);
     if (inStock) params.set("inStock", "true");
-
-    const statusTimer = window.setTimeout(() => setLoadError(""), 0);
 
     apiRequest(`/api/products?${params.toString()}`, { signal: controller.signal })
       .then((data) => {
         if (cancelled) return;
         const nextProducts = Array.isArray(data.products) ? data.products : [];
         setProducts((current) => page === 1 ? nextProducts : [...current, ...nextProducts]);
-        setCategories(Array.isArray(data.filters?.categories) ? data.filters.categories : []);
         setPagination(data.pagination || { total: nextProducts.length, hasMore: false });
       })
       .catch((error) => {
@@ -76,10 +82,9 @@ function Shop() {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(statusTimer);
       controller.abort();
     };
-  }, [page, requestKey, selectedCategory, query, sortBy, inStock]);
+  }, [page, requestKey, safeCategory, query, sortBy, inStock]);
 
   function updateParam(name, value, defaultValue = "") {
     const next = new URLSearchParams(searchParams);
@@ -131,8 +136,8 @@ function Shop() {
 
           {!loading && (
             <div className="mb-10 flex gap-3 overflow-x-auto pb-2" aria-label="Product categories">
-              {["All", ...categories].map((category) => (
-                <button key={category} type="button" onClick={() => updateParam("category", category === "All" ? "" : category)} className={`shrink-0 rounded-full px-5 py-2.5 font-semibold transition ${selectedCategory === category ? "bg-orange-500 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-600"}`}>
+              {CANONICAL_CATEGORIES.map((category) => (
+                <button key={category} type="button" onClick={() => updateParam("category", category === "All" ? "" : category)} className={`shrink-0 rounded-full px-5 py-2.5 font-semibold transition ${safeCategory === category ? "bg-orange-500 text-white" : "border border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-600"}`}>
                   {category}
                 </button>
               ))}
