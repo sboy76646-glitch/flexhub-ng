@@ -14,13 +14,13 @@ const OTP_RESEND_COOLDOWN_SECONDS = 60;
 const ACCOUNT_LOCK_MINUTES = 15;
 const MAX_LOGIN_ATTEMPTS = 5;
 
-function createToken(userId) {
+function createToken(user) {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not configured.");
   }
 
   return jwt.sign(
-    { userId },
+    { userId: user._id, tokenVersion: Number(user.tokenVersion || 0) },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -255,7 +255,7 @@ export async function verifyEmail(req, res) {
       return res.status(200).json({
         success: true,
         message: "Your email is already verified.",
-        token: createToken(user._id),
+        token: createToken(user),
         user: formatUser(user),
       });
     }
@@ -292,7 +292,7 @@ export async function verifyEmail(req, res) {
     return res.status(200).json({
       success: true,
       message: "Your email has been verified successfully.",
-      token: createToken(user._id),
+      token: createToken(user),
       user: formatUser(user),
     });
   } catch (error) {
@@ -491,7 +491,7 @@ export async function loginUser(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login successful.",
-      token: createToken(user._id),
+      token: createToken(user),
       user: formatUser(user),
     });
   } catch (error) {
