@@ -37,6 +37,8 @@ import {
 dotenv.config();
 
 const app = express();
+// Production is hosted behind one trusted reverse proxy; keep this aligned with hosting.
+app.set("trust proxy", 1);
 
 app.disable("x-powered-by");
 app.use(helmet({
