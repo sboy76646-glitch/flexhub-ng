@@ -6,6 +6,7 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
+import ScrollToTop from "../components/system/ScrollToTop";
 
 const Home = lazy(() =>
   import("../pages/Home")
@@ -117,6 +118,7 @@ function PageLoader() {
 function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"
