@@ -207,7 +207,7 @@ export async function createOrder(req, res) {
       const product = productById.get(productId);
       const quantity = quantitiesByProduct.get(productId);
 
-      if (!product.store || product.store.status !== "approved") {
+      if (!product.store || product.store.status !== "approved" || product.store.verified !== true) {
         return res.status(409).json({ success: false, message: `${product.name} is not currently available.` });
       }
 

@@ -18,6 +18,10 @@ export async function requireAuth(req, res, next) {
       return res.status(401).json({ success: false, message: "Account not found." });
     }
 
+    if (Number(payload.tokenVersion || 0) !== Number(user.tokenVersion || 0)) {
+      return res.status(401).json({ success: false, message: "Your session has been revoked. Please log in again." });
+    }
+
     req.user = user;
     return next();
   } catch {

@@ -1,10 +1,8 @@
 const buckets = new Map();
 
 function getClientKey(req, scope) {
-  const forwarded = req.headers["x-forwarded-for"];
-  const ip = Array.isArray(forwarded)
-    ? forwarded[0]
-    : String(forwarded || req.ip || "unknown").split(",")[0].trim();
+  // Use Express's resolved client IP; do not trust a client-supplied header directly.
+  const ip = req.ip || req.socket?.remoteAddress || "unknown";
   return `${scope}:${ip}`;
 }
 

@@ -154,6 +154,17 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    passwordResetAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+
     twoFactorEnabled: {
       type: Boolean,
       default: false,
