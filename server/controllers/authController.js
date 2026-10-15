@@ -564,6 +564,7 @@ export async function forgotPassword(req, res) {
     const otp = createOTP();
 
     user.passwordResetOTP = hashOTP(otp);
+    user.passwordResetAttempts = 0;
     user.passwordResetExpires = new Date(
       Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000
     );
@@ -660,6 +661,7 @@ export async function verifyResetOTP(req, res) {
 
     user.passwordResetOTP = null;
     user.passwordResetExpires = null;
+    user.passwordResetAttempts = 0;
     user.lastOTPRequestAt = null;
 
     await user.save();
@@ -765,6 +767,7 @@ export async function resetPassword(req, res) {
 
     // Sign the user out from existing sessions.
     user.refreshToken = null;
+    user.tokenVersion = Number(user.tokenVersion || 0) + 1;
     user.loginAttempts = 0;
     user.lockUntil = null;
 
