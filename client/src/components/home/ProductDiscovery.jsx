@@ -37,49 +37,48 @@ function DiscoverySection({ title, subtitle, products }) {
   );
 }
 
-function ProductDiscovery() {
+function ProductDiscovery({ initialProducts = [], productsLoading = false }) {
   const { isAuthenticated, token } = useAuth();
   const { rankProducts } = usePersonalization();
   const [sections, setSections] = useState({});
   const [location, setLocation] = useState("");
 
   useEffect(() => {
-    let cancelled = false;
-
-    if (isAuthenticated && token) {
-      apiRequest("/api/recommendations", { token, timeout: 15000 })
-        .then((data) => {
-          if (!cancelled) {
-            setSections(data.sections || {});
-            setLocation(data.location || "");
-          }
-        })
-        .catch(() => {
-          if (!cancelled) {
-            setSections({});
-            setLocation("");
-          }
-        });
-    } else {
-      apiRequest("/api/products?limit=40", { timeout: 15000 })
-        .then((data) => {
-          if (!cancelled) {
-            const products = data.products || [];
-            setSections({
-              trending: products,
-              popularNearYou: products,
-              newest: [...products].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
-              alsoLike: products,
-            });
-          }
-        })
-        .catch(() => {
-          if (!cancelled) setSections({});
-        });
+    if (!isAuthenticated || !token) {
+      setSections({});
+      setLocation("");
+      return undefined;
     }
+
+    let cancelled = false;
+    apiRequest("/api/recommendations", { token, timeout: 15000 })
+      .then((data) => {
+        if (!cancelled) {
+          setSections(data.sections || {});
+          setLocation(data.location || "");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSections({});
+          setLocation("");
+        }
+      });
 
     return () => { cancelled = true; };
   }, [isAuthenticated, token]);
+
+  useEffect(() => {
+    if (isAuthenticated || productsLoading) return;
+
+    const products = Array.isArray(initialProducts) ? initialProducts : [];
+    setSections({
+      trending: products,
+      popularNearYou: products,
+      newest: [...products].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)),
+      alsoLike: products,
+    });
+  }, [isAuthenticated, initialProducts, productsLoading]);
 
   const rankedSections = useMemo(() => Object.fromEntries(
     Object.entries(sections).map(([key, products]) => [
