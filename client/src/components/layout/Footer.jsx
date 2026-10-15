@@ -152,48 +152,33 @@ function Footer() {
 
           <ul className="space-y-3 text-slate-400">
             <li>
-              <button
-                type="button"
-                className="hover:text-orange-400"
-              >
+              <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Help" className="hover:text-orange-400">
                 Help Center
-              </button>
+              </a>
             </li>
 
             <li>
-              <button
-                type="button"
-                className="hover:text-orange-400"
-              >
+              <Link to="/orders" className="hover:text-orange-400">
                 Track Order
-              </button>
+              </Link>
             </li>
 
             <li>
-              <button
-                type="button"
-                className="hover:text-orange-400"
-              >
+              <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Returns" className="hover:text-orange-400">
                 Returns
-              </button>
+              </a>
             </li>
 
             <li>
-              <button
-                type="button"
-                className="hover:text-orange-400"
-              >
+              <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Privacy%20Policy" className="hover:text-orange-400">
                 Privacy Policy
-              </button>
+              </a>
             </li>
 
             <li>
-              <button
-                type="button"
-                className="hover:text-orange-400"
-              >
+              <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Terms%20and%20Conditions" className="hover:text-orange-400">
                 Terms & Conditions
-              </button>
+              </a>
             </li>
           </ul>
         </div>
@@ -244,24 +229,18 @@ function Footer() {
           </div>
 
           <div className="mt-8">
-            <h4 className="mb-3 font-semibold text-white">
-              Subscribe to our newsletter
+            <h4 className="mb-2 font-semibold text-white">
+              Newsletter
             </h4>
-
-            <div className="flex overflow-hidden rounded-xl border border-slate-800 bg-slate-900 focus-within:border-orange-500">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-white outline-none placeholder:text-slate-500"
-              />
-
-              <button
-                type="button"
-                className="bg-orange-500 px-5 font-semibold text-white hover:bg-orange-600"
-              >
-                Join
-              </button>
-            </div>
+            <p className="text-sm leading-6 text-slate-400">
+              Newsletter signup is handled manually for now. Request to join by email.
+            </p>
+            <a
+              href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Newsletter%20Signup"
+              className="mt-3 inline-flex rounded-xl bg-orange-500 px-4 py-3 font-semibold text-white hover:bg-orange-600"
+            >
+              Request to join
+            </a>
           </div>
         </div>
 
