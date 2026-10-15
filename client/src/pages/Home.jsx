@@ -12,26 +12,38 @@ import { apiRequest } from "../lib/api";
 
 function Home() {
   const [marketplaceProducts, setMarketplaceProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
-    apiRequest("/api/products?limit=10")
+    setProductsLoading(true);
+    setProductsError("");
+
+    apiRequest("/api/products?limit=40", { timeout: 20000 })
       .then((data) => {
-        if (!cancelled) {
-          setMarketplaceProducts(data.products || []);
-        }
+        if (cancelled) return;
+        setMarketplaceProducts(Array.isArray(data.products) ? data.products : []);
       })
-      .catch(() => {
-        if (!cancelled) {
-          setMarketplaceProducts([]);
-        }
+      .catch((error) => {
+        if (cancelled) return;
+        setMarketplaceProducts([]);
+        setProductsError(error.message || "We couldn't load products right now.");
+      })
+      .finally(() => {
+        if (!cancelled) setProductsLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
+
+  function retryProducts() {
+    setReloadKey((key) => key + 1);
+  }
 
   return (
     <Layout>
@@ -45,9 +57,17 @@ function Home() {
         <FlashDeals products={marketplaceProducts} />
       )}
 
-      <FeaturedProducts products={marketplaceProducts} />
+      <FeaturedProducts
+        products={marketplaceProducts}
+        loading={productsLoading}
+        error={productsError}
+        onRetry={retryProducts}
+      />
 
-      <ProductDiscovery products={marketplaceProducts} />
+      <ProductDiscovery
+        initialProducts={marketplaceProducts}
+        productsLoading={productsLoading}
+      />
 
       <MarketplaceIntro />
     </Layout>
