@@ -171,13 +171,13 @@ function Footer() {
 
             <li>
               <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Privacy%20Policy" className="hover:text-orange-400">
-                Privacy Policy
+                Request Privacy Policy
               </a>
             </li>
 
             <li>
               <a href="mailto:danny.olidean@gmail.com?subject=FlexHub%20NG%20Terms%20and%20Conditions" className="hover:text-orange-400">
-                Terms & Conditions
+                Request Terms & Conditions
               </a>
             </li>
           </ul>
