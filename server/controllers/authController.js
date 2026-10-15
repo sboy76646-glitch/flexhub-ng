@@ -13,6 +13,7 @@ const OTP_EXPIRATION_MINUTES = 10;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
 const ACCOUNT_LOCK_MINUTES = 15;
 const MAX_LOGIN_ATTEMPTS = 5;
+const MAX_PASSWORD_RESET_ATTEMPTS = 5;
 
 function createToken(user) {
   if (!process.env.JWT_SECRET) {
@@ -616,7 +617,7 @@ export async function verifyResetOTP(req, res) {
 
     const user = await User.findOne({
       email: normalizedEmail,
-    }).select("+passwordResetOTP +passwordResetExpires");
+    }).select("+passwordResetOTP +passwordResetExpires +passwordResetAttempts");
 
     if (!user) {
       return res.status(400).json({
@@ -627,22 +628,31 @@ export async function verifyResetOTP(req, res) {
 
     if (
       !user.passwordResetOTP ||
-      user.passwordResetOTP !== hashOTP(otp)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "The reset code is incorrect.",
-      });
-    }
-
-    if (
       !user.passwordResetExpires ||
       user.passwordResetExpires.getTime() < Date.now()
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "The reset code has expired. Request a new code.",
+        message: "The reset code is invalid or expired. Request a new code.",
+      });
+    }
+
+    if (user.passwordResetOTP !== hashOTP(otp)) {
+      user.passwordResetAttempts = (user.passwordResetAttempts || 0) + 1;
+      if (user.passwordResetAttempts >= MAX_PASSWORD_RESET_ATTEMPTS) {
+        user.passwordResetOTP = null;
+        user.passwordResetExpires = null;
+        user.passwordResetAttempts = 0;
+        await user.save();
+        return res.status(429).json({
+          success: false,
+          message: "Too many incorrect reset codes. Request a new code.",
+        });
+      }
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: "The reset code is incorrect.",
       });
     }
 
