@@ -349,7 +349,7 @@ export async function getPublicProduct(req, res) {
   const product = await Product.findOne({ _id: req.params.productId, status: "approved" })
     .populate({
       path: "store",
-      match: { status: "approved" },
+      match: { status: "approved", verified: true },
       select: "name slug verified location verificationLevel verificationChecks performance",
     })
     .lean();
