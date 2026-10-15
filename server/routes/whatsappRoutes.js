@@ -3,7 +3,7 @@ import express from "express";
 
 const router = express.Router();
 
-function hasValidMetaSignature(req) {
+export function hasValidMetaSignature(req) {
   const appSecret = String(process.env.WHATSAPP_APP_SECRET || "").trim();
   const signature = req.get("x-hub-signature-256") || "";
   const rawBody = req.rawBody;
