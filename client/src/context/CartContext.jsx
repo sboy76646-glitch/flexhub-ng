@@ -26,18 +26,21 @@ export function CartProvider({ children }) {
     localStorage.setItem("flexhub-cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  function addToCart(product, quantity = 1) {
+  function addToCart(product, quantity = 1, selectedSize = "") {
+    const cartKey = selectedSize ? String(product.id) + "::size::" + selectedSize : String(product.id);
+    const variantStock = selectedSize ? (product.sizes?.find((size) => size.label === selectedSize)?.stock || 0) : (product.stock || 99);
+    const cartProduct = { ...product, selectedSize: selectedSize || "", cartKey, stock: variantStock };
     setCartItems((previousItems) => {
       const existingProduct = previousItems.find(
-        (item) => item.id === product.id
+        (item) => (item.cartKey || String(item.id)) === cartKey
       );
 
       if (existingProduct) {
         return previousItems.map((item) =>
-          item.id === product.id
+          (item.cartKey || String(item.id)) === cartKey
             ? {
                 ...item,
-                quantity: Math.min(item.quantity + quantity, item.stock || 99),
+                quantity: Math.min(item.quantity + quantity, variantStock || 99),
               }
             : item
         );
@@ -46,21 +49,21 @@ export function CartProvider({ children }) {
       return [
         ...previousItems,
         {
-          ...product,
-          quantity: Math.min(quantity, product.stock || quantity),
+          ...cartProduct,
+          quantity: Math.min(quantity, variantStock || quantity),
         },
       ];
     });
 
     toast.success(
-      `${quantity} × ${product.name} added to cart`
+      `${quantity} × ${product.name}${selectedSize ? ` (size ${selectedSize})` : ""} added to cart`
     );
   }
 
   function removeFromCart(id) {
     setCartItems((previousItems) => {
       const product = previousItems.find(
-        (item) => item.id === id
+        (item) => (item.cartKey || String(item.id)) === String(id)
       );
 
       if (product) {
@@ -68,7 +71,7 @@ export function CartProvider({ children }) {
       }
 
       return previousItems.filter(
-        (item) => item.id !== id
+        (item) => (item.cartKey || String(item.id)) !== String(id)
       );
     });
   }
@@ -76,7 +79,7 @@ export function CartProvider({ children }) {
   function increaseQuantity(id) {
     setCartItems((previousItems) =>
       previousItems.map((item) =>
-        item.id === id
+        (item.cartKey || String(item.id)) === String(id)
           ? {
               ...item,
               quantity: Math.min(item.quantity + 1, item.stock || 99),
@@ -90,7 +93,7 @@ export function CartProvider({ children }) {
     setCartItems((previousItems) =>
       previousItems
         .map((item) =>
-          item.id === id
+          (item.cartKey || String(item.id)) === String(id)
             ? {
                 ...item,
                 quantity: item.quantity - 1,

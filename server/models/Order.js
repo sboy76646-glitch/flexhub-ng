@@ -8,6 +8,7 @@ const orderItemSchema = new mongoose.Schema(
     storeName: { type: String, required: true },
     storeSlug: { type: String, required: true },
     name: { type: String, required: true },
+    size: { type: String, trim: true, maxlength: 30, default: "" },
     imageUrl: { type: String, required: true },
     unitPrice: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },

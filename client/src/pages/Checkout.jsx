@@ -121,7 +121,7 @@ function Checkout() {
     const items = cartItems
       .map(
         (item) =>
-          `• ${item.name} x${item.quantity}`
+          `• ${item.name}${item.selectedSize ? ` (size ${item.selectedSize})` : ""} x${item.quantity}`
       )
       .join("\n");
 
@@ -234,6 +234,7 @@ function Checkout() {
               items: cartItems.map((item) => ({
                 productId: item.id,
                 quantity: item.quantity,
+                size: item.selectedSize || "",
               })),
 
               shippingAddress: {

@@ -135,6 +135,7 @@ export function customerOrderView(order) {
       storeName: item.storeName,
       storeSlug: item.storeSlug,
       name: item.name,
+      size: item.size || "",
       imageUrl: item.imageUrl,
       unitPrice: item.unitPrice,
       quantity: item.quantity,
@@ -172,30 +173,29 @@ export async function createOrder(req, res) {
       return res.status(400).json({ success: false, message: "Your order must contain between 1 and 50 products." });
     }
 
-    const quantitiesByProduct = new Map();
+    const quantitiesByVariant = new Map();
 
     for (const item of req.body.items) {
       if (!mongoose.isValidObjectId(item.productId)) {
         return res.status(400).json({ success: false, message: "One or more cart items are no longer available." });
       }
-
       const quantity = Number(item.quantity);
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
         return res.status(400).json({ success: false, message: "Each product quantity must be between 1 and 99." });
       }
-
       const productId = String(item.productId);
-      const combinedQuantity = (quantitiesByProduct.get(productId) || 0) + quantity;
+      const size = String(item.size || "").trim();
+      if (size.length > 30) return res.status(400).json({ success: false, message: "The selected size is invalid." });
+      const key = productId + "::" + size;
+      const combinedQuantity = (quantitiesByVariant.get(key)?.quantity || 0) + quantity;
       if (combinedQuantity > 99) {
-        return res.status(400).json({ success: false, message: "A single product cannot exceed 99 units per order." });
+        return res.status(400).json({ success: false, message: "A product size cannot exceed 99 units per order." });
       }
-      quantitiesByProduct.set(productId, combinedQuantity);
+      quantitiesByVariant.set(key, { productId, size, quantity: combinedQuantity });
     }
 
-    const productIds = [...quantitiesByProduct.keys()];
-    const products = await Product.find({ _id: { $in: productIds }, status: "approved" })
-      .populate("store");
-
+    const productIds = [...new Set([...quantitiesByVariant.values()].map((line) => line.productId))];
+    const products = await Product.find({ _id: { $in: productIds }, status: "approved" }).populate("store");
     if (products.length !== productIds.length) {
       return res.status(409).json({ success: false, message: "A product in your cart is no longer available." });
     }
@@ -203,27 +203,34 @@ export async function createOrder(req, res) {
     const productById = new Map(products.map((product) => [String(product._id), product]));
     const orderItems = [];
 
-    for (const productId of productIds) {
+    for (const { productId, size, quantity } of quantitiesByVariant.values()) {
       const product = productById.get(productId);
-      const quantity = quantitiesByProduct.get(productId);
-
       if (!product.store || product.store.status !== "approved" || product.store.verified !== true) {
         return res.status(409).json({ success: false, message: `${product.name} is not currently available.` });
       }
 
-      if (product.stock < quantity) {
+      let availableStock = product.stock;
+      if (product.hasSizes) {
+        if (!size) return res.status(400).json({ success: false, message: `Choose a size for ${product.name}.` });
+        const sizeRow = product.sizes.find((entry) => entry.label === size);
+        if (!sizeRow) return res.status(409).json({ success: false, message: `Size ${size} is not available for ${product.name}.` });
+        availableStock = sizeRow.stock;
+      } else if (size) {
+        return res.status(400).json({ success: false, message: `${product.name} does not have size options.` });
+      }
+
+      if (availableStock < quantity) {
         return res.status(409).json({
           success: false,
-          message: product.stock > 0
-            ? `Only ${product.stock} unit(s) of ${product.name} remain.`
-            : `${product.name} is sold out.`,
+          message: availableStock > 0
+            ? `Only ${availableStock} unit(s) of ${product.name}${size ? ` in size ${size}` : ""} remain.`
+            : `${product.name}${size ? ` in size ${size}` : ""} is sold out.`,
         });
       }
 
       const lineTotal = product.price * quantity;
       const commissionRateBps = product.store.commissionRateBps ?? 1000;
       const commissionAmount = Math.round((lineTotal * commissionRateBps) / 10000);
-
       orderItems.push({
         product: product._id,
         store: product.store._id,
@@ -231,6 +238,7 @@ export async function createOrder(req, res) {
         storeName: product.store.name,
         storeSlug: product.store.slug,
         name: product.name,
+        size,
         imageUrl: product.imageUrl,
         unitPrice: product.price,
         quantity,
@@ -250,7 +258,7 @@ export async function createOrder(req, res) {
     const shippingAddress = parseShippingAddress(req.body.shippingAddress);
     const idempotencyFingerprint = idempotencyKey
       ? crypto.createHash("sha256").update(JSON.stringify({
-        items: [...quantitiesByProduct.entries()].sort(([left], [right]) => left.localeCompare(right)),
+        items: [...quantitiesByVariant.entries()].sort(([left], [right]) => left.localeCompare(right)),
         shippingAddress,
       })).digest("hex")
       : "";

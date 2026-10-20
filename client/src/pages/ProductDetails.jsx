@@ -27,6 +27,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("");
   const [reviewBusy, setReviewBusy] = useState(false);
 
   useEffect(() => {
@@ -34,7 +35,11 @@ function ProductDetails() {
 
     apiRequest(`/api/products/${id}`)
       .then((data) => {
-        if (!cancelled) setProduct(data.product || null);
+        if (!cancelled) {
+          setProduct(data.product || null);
+          const firstAvailable = data.product?.sizes?.find((size) => Number(size.stock) > 0);
+          setSelectedSize(firstAvailable?.label || "");
+        }
       })
       .catch(() => {
         if (!cancelled) setProduct(null);
@@ -71,17 +76,18 @@ function ProductDetails() {
     );
   }
 
-  const stock = Number(product.stock || 0);
+  const stock = product.hasSizes
+    ? Number(product.sizes?.find((size) => size.label === selectedSize)?.stock || 0)
+    : Number(product.stock || 0);
   const price = Number(product.price || 0);
   const oldPrice = Number(product.oldPrice || 0);
 
   function addItemToCart() {
-    addToCart(product, quantity);
-    toast.success("Added to cart.");
+    addToCart(product, quantity, selectedSize);
   }
 
   function buyNow() {
-    addToCart(product, quantity);
+    addToCart(product, quantity, selectedSize);
     navigate("/checkout");
   }
 
@@ -198,6 +204,10 @@ function ProductDetails() {
                 <p className="mt-3 whitespace-pre-line leading-8 text-slate-600">{product.description}</p>
               </div>
 
+              {product.hasSizes && <div className="mt-7">
+                <h2 className="text-sm font-black text-slate-900">Select size <span className="font-normal text-slate-500">({product.sizes?.length || 0} options)</span></h2>
+                <div className="mt-3 flex flex-wrap gap-2">{(product.sizes || []).map((size) => { const available = Number(size.stock) > 0; const selected = selectedSize === size.label; return <button key={size.label} type="button" disabled={!available} onClick={() => { setSelectedSize(size.label); setQuantity(1); }} aria-pressed={selected} className={"min-w-14 rounded-xl border px-4 py-3 text-sm font-bold " + (selected ? "border-orange-500 bg-orange-500 text-white" : available ? "border-slate-300 bg-white hover:border-orange-400" : "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300 line-through")}>{size.label}{!available && <span className="block text-[9px] font-medium no-underline">Sold out</span>}</button>; })}</div>
+              </div>}
               <div className="mt-8 flex items-end gap-4">
                 <div><label className="mb-2 block text-sm font-bold">Quantity</label><div className="flex items-center rounded-xl border border-slate-300 bg-white"><button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} disabled={quantity <= 1} className="h-12 w-12 text-xl disabled:opacity-30">−</button><span className="w-10 text-center text-lg font-black">{quantity}</span><button type="button" onClick={() => setQuantity((current) => Math.min(current + 1, stock))} disabled={stock < 1 || quantity >= stock} className="h-12 w-12 text-xl disabled:opacity-30">+</button></div></div>
               </div>

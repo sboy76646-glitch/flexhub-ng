@@ -49,7 +49,21 @@ function parseProductFields(body) {
   const videoUrl = String(body.videoUrl || "").trim();
   const warranty = String(body.warranty || "No warranty").trim() || "No warranty";
   const price = Number(body.price);
-  const stock = Number(body.stock);
+  const hasSizes = body.hasSizes === true || body.hasSizes === "true";
+  let sizes = [];
+  if (hasSizes) {
+    const rawSizes = Array.isArray(body.sizes) ? body.sizes : [];
+    sizes = rawSizes.map((entry) => ({
+      label: String(entry?.label || "").trim(),
+      stock: Number(entry?.stock),
+    }));
+    if (!sizes.length || sizes.some((entry) => !entry.label || entry.label.length > 30 || !Number.isInteger(entry.stock) || entry.stock < 0 || entry.stock > 99999)) {
+      throw new Error("Add a valid stock quantity for every size.");
+    }
+    const labels = sizes.map((entry) => entry.label.toLowerCase());
+    if (new Set(labels).size !== labels.length) throw new Error("Each size option must be unique.");
+  }
+  const stock = hasSizes ? sizes.reduce((total, entry) => total + entry.stock, 0) : Number(body.stock);
   const oldPrice = body.oldPrice === "" || body.oldPrice == null ? null : Number(body.oldPrice);
   const condition = productConditions.includes(body.condition) ? body.condition : "brand_new";
   const fulfillmentType = body.fulfillmentType === "flexhub" ? "flexhub" : "seller";
@@ -93,6 +107,8 @@ function parseProductFields(body) {
     price,
     oldPrice,
     stock,
+    hasSizes,
+    sizes: hasSizes ? sizes : [],
     condition,
     warranty,
     returnWindowDays,
@@ -203,6 +219,8 @@ function publicProduct(product, reviewStats = {}, verifiedProductRate = 0) {
     price: product.price,
     oldPrice: product.oldPrice,
     stock: product.stock,
+    hasSizes: Boolean(product.hasSizes),
+    sizes: Array.isArray(product.sizes) ? product.sizes.map(({ label, stock }) => ({ label, stock })) : [],
     condition: product.condition,
     warranty: product.warranty,
     returnWindowDays: product.returnWindowDays,
@@ -296,7 +314,7 @@ export async function listPublicProducts(req, res) {
   const [products, total, categories] = await Promise.all([
     Product.find(query)
       .select(
-        "store name slug category description imageUrl videoUrl price oldPrice stock condition warranty returnWindowDays dispatchTimeDays fulfillmentType verificationStatus verifiedAt inspectionMethod actualImagesVerified flexProofVerified createdAt"
+        "store name slug category description imageUrl videoUrl price oldPrice stock hasSizes sizes condition warranty returnWindowDays dispatchTimeDays fulfillmentType verificationStatus verifiedAt inspectionMethod actualImagesVerified flexProofVerified createdAt"
       )
       .populate(
         "store",
@@ -448,7 +466,9 @@ export async function updateSellerProduct(req, res) {
       "fulfillmentType",
     ];
     const listingChanged = verificationFields
-      .some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""));
+      .some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""))
+      || fields.hasSizes !== Boolean(product.hasSizes)
+      || JSON.stringify((fields.sizes || []).map((size) => size.label)) !== JSON.stringify((product.sizes || []).map((size) => size.label));
 
     Object.assign(product, fields);
 
