@@ -466,7 +466,9 @@ export async function updateSellerProduct(req, res) {
       "fulfillmentType",
     ];
     const listingChanged = verificationFields
-      .some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""));
+      .some((field) => String(fields[field] ?? "") !== String(product[field] ?? ""))
+      || fields.hasSizes !== Boolean(product.hasSizes)
+      || JSON.stringify(fields.sizes || []) !== JSON.stringify((product.sizes || []).map((size) => ({ label: size.label, stock: size.stock })));
 
     Object.assign(product, fields);
 
