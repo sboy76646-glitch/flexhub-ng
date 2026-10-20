@@ -269,6 +269,8 @@ function SellerDashboard() {
       setVideoUrl("");
       setVideoFile(null);
       setEditingProduct(null);
+      setHasSizes(false);
+      setSizeRows([]);
       toast.success(data.message);
     } catch (requestError) {
       toast.error(requestError.message);
@@ -279,6 +281,8 @@ function SellerDashboard() {
 
   function startEditingProduct(product) {
     setEditingProduct(product);
+    setHasSizes(Boolean(product.hasSizes));
+    setSizeRows(Array.isArray(product.sizes) ? product.sizes.map((size) => ({ label: size.label, stock: size.stock })) : []);
     setImageUrl(product.imageUrl);
     setImageFile(null);
     setVideoUrl(product.videoUrl || "");
@@ -290,6 +294,8 @@ function SellerDashboard() {
 
   function cancelEditingProduct() {
     setEditingProduct(null);
+    setHasSizes(false);
+    setSizeRows([]);
     setImageUrl("");
     setImageFile(null);
     setVideoUrl("");
@@ -319,6 +325,11 @@ function SellerDashboard() {
   }
 
   async function updateStock(product) {
+    if (product.hasSizes) {
+      startEditingProduct(product);
+      toast("Edit the size quantities in the product form.");
+      return;
+    }
     const value = window.prompt(`How many units of ${product.name} are available?`, product.stock);
     if (value === null) return;
     setBusy(product._id);
