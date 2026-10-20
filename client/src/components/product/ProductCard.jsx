@@ -45,19 +45,19 @@ function ProductCard({ product }) {
 
   return (
     <article className="product-card overflow-hidden">
-      <Link to={`/product/${product.id}`} onClick={handleProductView} className="block h-36 overflow-hidden bg-slate-100 sm:h-44">
+      <Link to={`/product/${product.id}`} onClick={handleProductView} className="block h-36 overflow-hidden bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500 sm:h-44">
         <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="product-card-image h-full w-full object-cover" />
       </Link>
 
       <div className="flex flex-1 flex-col px-3 py-2.5 sm:px-3.5 sm:py-3">
         <div className="flex items-center justify-between gap-2">
           <p className="truncate text-[10px] font-bold uppercase tracking-wide text-orange-500">{product.category}</p>
-          <button type="button" onClick={toggleWishlist} aria-label={liked ? "Remove from wishlist" : "Add to wishlist"} className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:text-red-500">
+          <button type="button" onClick={toggleWishlist} aria-label={liked ? "Remove from wishlist" : "Add to wishlist"} className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
             <Heart size={17} className={liked ? "fill-red-500 text-red-500" : ""} />
           </button>
         </div>
 
-        <Link to={`/product/${product.id}`} onClick={handleProductView}>
+        <Link to={`/product/${product.id}`} onClick={handleProductView} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500">
           <h3 className="mt-0.5 min-h-[34px] line-clamp-2 text-[13px] font-black leading-[17px] text-slate-950 transition-colors hover:text-orange-600 sm:text-sm sm:leading-[18px]">{product.name}</h3>
         </Link>
 
@@ -71,7 +71,7 @@ function ProductCard({ product }) {
             <span className="block text-base font-black leading-none text-orange-600 sm:text-lg">₦{price.toLocaleString()}</span>
             {oldPrice > price && <span className="mt-0.5 block text-[10px] text-slate-400 line-through">₦{oldPrice.toLocaleString()}</span>}
           </div>
-          <button type="button" onClick={handleAddToCart} disabled={stock < 1} aria-label={stock > 0 ? "Add to cart" : "Sold out"} title={stock > 0 ? "Add to cart" : "Sold out"} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm transition hover:bg-orange-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-400">
+          <button type="button" onClick={handleAddToCart} disabled={stock < 1} aria-label={stock > 0 ? "Add to cart" : "Sold out"} title={stock > 0 ? "Add to cart" : "Sold out"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm transition-colors hover:bg-orange-600 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-400">
             <ShoppingCart size={16} />
           </button>
         </div>
