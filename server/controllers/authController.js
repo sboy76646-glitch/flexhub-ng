@@ -13,14 +13,15 @@ const OTP_EXPIRATION_MINUTES = 10;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
 const ACCOUNT_LOCK_MINUTES = 15;
 const MAX_LOGIN_ATTEMPTS = 5;
+const MAX_PASSWORD_RESET_ATTEMPTS = 5;
 
-function createToken(userId) {
+function createToken(user) {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not configured.");
   }
 
   return jwt.sign(
-    { userId },
+    { userId: user._id, tokenVersion: Number(user.tokenVersion || 0) },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -255,7 +256,7 @@ export async function verifyEmail(req, res) {
       return res.status(200).json({
         success: true,
         message: "Your email is already verified.",
-        token: createToken(user._id),
+        token: createToken(user),
         user: formatUser(user),
       });
     }
@@ -292,7 +293,7 @@ export async function verifyEmail(req, res) {
     return res.status(200).json({
       success: true,
       message: "Your email has been verified successfully.",
-      token: createToken(user._id),
+      token: createToken(user),
       user: formatUser(user),
     });
   } catch (error) {
@@ -491,7 +492,7 @@ export async function loginUser(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login successful.",
-      token: createToken(user._id),
+      token: createToken(user),
       user: formatUser(user),
     });
   } catch (error) {
@@ -563,6 +564,7 @@ export async function forgotPassword(req, res) {
     const otp = createOTP();
 
     user.passwordResetOTP = hashOTP(otp);
+    user.passwordResetAttempts = 0;
     user.passwordResetExpires = new Date(
       Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000
     );
@@ -616,7 +618,7 @@ export async function verifyResetOTP(req, res) {
 
     const user = await User.findOne({
       email: normalizedEmail,
-    }).select("+passwordResetOTP +passwordResetExpires");
+    }).select("+passwordResetOTP +passwordResetExpires +passwordResetAttempts");
 
     if (!user) {
       return res.status(400).json({
@@ -627,22 +629,31 @@ export async function verifyResetOTP(req, res) {
 
     if (
       !user.passwordResetOTP ||
-      user.passwordResetOTP !== hashOTP(otp)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "The reset code is incorrect.",
-      });
-    }
-
-    if (
       !user.passwordResetExpires ||
       user.passwordResetExpires.getTime() < Date.now()
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "The reset code has expired. Request a new code.",
+        message: "The reset code is invalid or expired. Request a new code.",
+      });
+    }
+
+    if (user.passwordResetOTP !== hashOTP(otp)) {
+      user.passwordResetAttempts = (user.passwordResetAttempts || 0) + 1;
+      if (user.passwordResetAttempts >= MAX_PASSWORD_RESET_ATTEMPTS) {
+        user.passwordResetOTP = null;
+        user.passwordResetExpires = null;
+        user.passwordResetAttempts = 0;
+        await user.save();
+        return res.status(429).json({
+          success: false,
+          message: "Too many incorrect reset codes. Request a new code.",
+        });
+      }
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: "The reset code is incorrect.",
       });
     }
 
@@ -650,6 +661,7 @@ export async function verifyResetOTP(req, res) {
 
     user.passwordResetOTP = null;
     user.passwordResetExpires = null;
+    user.passwordResetAttempts = 0;
     user.lastOTPRequestAt = null;
 
     await user.save();
@@ -755,6 +767,7 @@ export async function resetPassword(req, res) {
 
     // Sign the user out from existing sessions.
     user.refreshToken = null;
+    user.tokenVersion = Number(user.tokenVersion || 0) + 1;
     user.loginAttempts = 0;
     user.lockUntil = null;
 
