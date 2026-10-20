@@ -107,6 +107,8 @@ function parseProductFields(body) {
     price,
     oldPrice,
     stock,
+    hasSizes,
+    sizes: hasSizes ? sizes : [],
     condition,
     warranty,
     returnWindowDays,
