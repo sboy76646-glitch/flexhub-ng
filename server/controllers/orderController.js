@@ -135,6 +135,7 @@ export function customerOrderView(order) {
       storeName: item.storeName,
       storeSlug: item.storeSlug,
       name: item.name,
+      size: item.size || "",
       imageUrl: item.imageUrl,
       unitPrice: item.unitPrice,
       quantity: item.quantity,
