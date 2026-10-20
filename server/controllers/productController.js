@@ -217,6 +217,8 @@ function publicProduct(product, reviewStats = {}, verifiedProductRate = 0) {
     price: product.price,
     oldPrice: product.oldPrice,
     stock: product.stock,
+    hasSizes: Boolean(product.hasSizes),
+    sizes: Array.isArray(product.sizes) ? product.sizes.map(({ label, stock }) => ({ label, stock })) : [],
     condition: product.condition,
     warranty: product.warranty,
     returnWindowDays: product.returnWindowDays,
@@ -310,7 +312,7 @@ export async function listPublicProducts(req, res) {
   const [products, total, categories] = await Promise.all([
     Product.find(query)
       .select(
-        "store name slug category description imageUrl videoUrl price oldPrice stock condition warranty returnWindowDays dispatchTimeDays fulfillmentType verificationStatus verifiedAt inspectionMethod actualImagesVerified flexProofVerified createdAt"
+        "store name slug category description imageUrl videoUrl price oldPrice stock hasSizes sizes condition warranty returnWindowDays dispatchTimeDays fulfillmentType verificationStatus verifiedAt inspectionMethod actualImagesVerified flexProofVerified createdAt"
       )
       .populate(
         "store",
