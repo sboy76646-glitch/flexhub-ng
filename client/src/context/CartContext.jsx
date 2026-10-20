@@ -71,7 +71,7 @@ export function CartProvider({ children }) {
       }
 
       return previousItems.filter(
-        (item) => item.id !== id
+        (item) => (item.cartKey || String(item.id)) !== String(id)
       );
     });
   }
