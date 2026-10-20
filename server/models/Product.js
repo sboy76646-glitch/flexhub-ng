@@ -12,6 +12,11 @@ const productSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 100, max: 1000000000 },
     oldPrice: { type: Number, default: null, min: 100, max: 1000000000 },
     stock: { type: Number, required: true, min: 0, max: 99999, default: 0 },
+    hasSizes: { type: Boolean, default: false },
+    sizes: [{
+      label: { type: String, required: true, trim: true, maxlength: 30 },
+      stock: { type: Number, required: true, min: 0, max: 99999, default: 0 },
+    }],
 
     condition: {
       type: String,
