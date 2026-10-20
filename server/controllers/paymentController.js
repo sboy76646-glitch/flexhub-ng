@@ -34,10 +34,13 @@ async function commitInventoryWithoutTransaction(orderId) {
 
     if (result.modifiedCount !== 1) {
       for (const adjustedItem of adjustedItems) {
-        await Product.updateOne(
-          { _id: adjustedItem.product },
-          { $inc: { stock: adjustedItem.quantity } }
-        );
+        const rollback = { stock: adjustedItem.quantity };
+        const rollbackFilter = { _id: adjustedItem.product };
+        if (adjustedItem.size) {
+          rollback["sizes.$.stock"] = adjustedItem.quantity;
+          rollbackFilter["sizes.label"] = adjustedItem.size;
+        }
+        await Product.updateOne(rollbackFilter, { $inc: rollback });
       }
 
       return Order.findByIdAndUpdate(
