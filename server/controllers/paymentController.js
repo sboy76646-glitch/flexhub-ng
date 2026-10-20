@@ -24,10 +24,13 @@ async function commitInventoryWithoutTransaction(orderId) {
   const adjustedItems = [];
 
   for (const item of claimedOrder.items) {
-    const result = await Product.updateOne(
-      { _id: item.product, stock: { $gte: item.quantity } },
-      { $inc: { stock: -item.quantity } }
-    );
+    const inventoryFilter = { _id: item.product, stock: { $gte: item.quantity } };
+    const inventoryChange = { stock: -item.quantity };
+    if (item.size) {
+      inventoryFilter.sizes = { $elemMatch: { label: item.size, stock: { $gte: item.quantity } } };
+      inventoryChange["sizes.$.stock"] = -item.quantity;
+    }
+    const result = await Product.updateOne(inventoryFilter, { $inc: inventoryChange });
 
     if (result.modifiedCount !== 1) {
       for (const adjustedItem of adjustedItems) {
@@ -71,9 +74,15 @@ async function commitInventoryInTransaction(orderId) {
       if (!order) return;
 
       for (const item of order.items) {
+        const inventoryFilter = { _id: item.product, stock: { $gte: item.quantity } };
+        const inventoryChange = { stock: -item.quantity };
+        if (item.size) {
+          inventoryFilter.sizes = { $elemMatch: { label: item.size, stock: { $gte: item.quantity } } };
+          inventoryChange["sizes.$.stock"] = -item.quantity;
+        }
         const result = await Product.updateOne(
-          { _id: item.product, stock: { $gte: item.quantity } },
-          { $inc: { stock: -item.quantity } },
+          inventoryFilter,
+          { $inc: inventoryChange },
           { session }
         );
 
