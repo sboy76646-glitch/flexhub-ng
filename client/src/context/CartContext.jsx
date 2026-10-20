@@ -79,7 +79,7 @@ export function CartProvider({ children }) {
   function increaseQuantity(id) {
     setCartItems((previousItems) =>
       previousItems.map((item) =>
-        item.id === id
+        (item.cartKey || String(item.id)) === String(id)
           ? {
               ...item,
               quantity: Math.min(item.quantity + 1, item.stock || 99),
