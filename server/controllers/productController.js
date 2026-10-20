@@ -49,7 +49,21 @@ function parseProductFields(body) {
   const videoUrl = String(body.videoUrl || "").trim();
   const warranty = String(body.warranty || "No warranty").trim() || "No warranty";
   const price = Number(body.price);
-  const stock = Number(body.stock);
+  const hasSizes = body.hasSizes === true || body.hasSizes === "true";
+  let sizes = [];
+  if (hasSizes) {
+    const rawSizes = Array.isArray(body.sizes) ? body.sizes : [];
+    sizes = rawSizes.map((entry) => ({
+      label: String(entry?.label || "").trim(),
+      stock: Number(entry?.stock),
+    }));
+    if (!sizes.length || sizes.some((entry) => !entry.label || entry.label.length > 30 || !Number.isInteger(entry.stock) || entry.stock < 0 || entry.stock > 99999)) {
+      throw new Error("Add a valid stock quantity for every size.");
+    }
+    const labels = sizes.map((entry) => entry.label.toLowerCase());
+    if (new Set(labels).size !== labels.length) throw new Error("Each size option must be unique.");
+  }
+  const stock = hasSizes ? sizes.reduce((total, entry) => total + entry.stock, 0) : Number(body.stock);
   const oldPrice = body.oldPrice === "" || body.oldPrice == null ? null : Number(body.oldPrice);
   const condition = productConditions.includes(body.condition) ? body.condition : "brand_new";
   const fulfillmentType = body.fulfillmentType === "flexhub" ? "flexhub" : "seller";
