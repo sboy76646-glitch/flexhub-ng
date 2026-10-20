@@ -116,7 +116,7 @@ function Cart() {
 
                 return (
                   <article
-                    key={item.id}
+                    key={item.cartKey || item.id}
                     className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 sm:p-5"
                   >
                     <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_130px_120px] sm:items-center sm:gap-5">
@@ -140,6 +140,7 @@ function Cart() {
                             {item.name}
                           </Link>
                           <p className="mt-2 text-lg font-black text-slate-950">{formatPrice(item.price)}</p>
+                          {item.selectedSize && <p className="mt-1 text-sm font-semibold text-slate-600">Size: {item.selectedSize}</p>}
                           {stock > 0 && (
                             <p className={`mt-1 text-xs font-bold ${atStockLimit ? "text-orange-600" : "text-emerald-600"}`}>
                               {atStockLimit ? "Maximum available quantity" : `${stock} available`}
@@ -147,7 +148,7 @@ function Cart() {
                           )}
                           <button
                             type="button"
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() => removeFromCart(item.cartKey || item.id)}
                             className="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-slate-400 transition hover:text-red-500"
                           >
                             <Trash2 size={14} />
@@ -161,7 +162,7 @@ function Cart() {
                         <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
                           <button
                             type="button"
-                            onClick={() => decreaseQuantity(item.id)}
+                            onClick={() => decreaseQuantity(item.cartKey || item.id)}
                             aria-label={`Decrease quantity of ${item.name}`}
                             className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-orange-500"
                           >
@@ -170,7 +171,7 @@ function Cart() {
                           <span className="min-w-8 text-center text-sm font-black text-slate-900">{item.quantity}</span>
                           <button
                             type="button"
-                            onClick={() => increaseQuantity(item.id)}
+                            onClick={() => increaseQuantity(item.cartKey || item.id)}
                             disabled={atStockLimit}
                             aria-label={`Increase quantity of ${item.name}`}
                             className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-white hover:text-orange-500 disabled:cursor-not-allowed disabled:opacity-30"
