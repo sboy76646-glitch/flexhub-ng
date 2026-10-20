@@ -122,6 +122,8 @@ function SellerDashboard() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [hasSizes, setHasSizes] = useState(false);
+  const [sizeRows, setSizeRows] = useState([]);
   const [banks, setBanks] = useState([]);
   const [bankError, setBankError] = useState("");
   const [bankLoading, setBankLoading] = useState(false);
@@ -243,7 +245,9 @@ function SellerDashboard() {
             imageUrl: finalImageUrl,
             price: form.get("price"),
             oldPrice: form.get("oldPrice"),
-            stock: form.get("stock"),
+            stock: hasSizes ? sizeRows.reduce((total, size) => total + Math.max(0, Number(size.stock) || 0), 0) : form.get("stock"),
+            hasSizes,
+            sizes: hasSizes ? sizeRows : [],
             condition: form.get("condition"),
             warranty: form.get("warranty"),
             returnWindowDays: form.get("returnWindowDays"),
@@ -571,12 +575,20 @@ function SellerDashboard() {
                       <div className="space-y-6">
                         <form id="product-editor" key={editingProduct?._id || "new-product"} onSubmit={submitProduct} className="scroll-mt-28 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                           <div className="flex items-start gap-3"><PackagePlus className="mt-1 text-orange-500" /><div><h2 className="text-2xl font-black">{editingProduct ? `Edit ${editingProduct.name}` : "Add a product"}</h2><p className="mt-1 text-slate-600">Give shoppers the useful details. Admin approval keeps the marketplace tidy.</p></div></div>
+                          <div className="mt-6 rounded-2xl border border-slate-200 p-5 md:col-span-2">
+                            <label className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={hasSizes} onChange={(event) => { const checked = event.target.checked; setHasSizes(checked); if (checked && sizeRows.length === 0) setSizeRows([{ label: "S", stock: 0 }, { label: "M", stock: 0 }, { label: "L", stock: 0 }, { label: "XL", stock: 0 }]); }} className="mt-1 h-4 w-4 accent-orange-500" /><span><span className="block font-bold text-slate-900">This product comes in different sizes</span><span className="mt-1 block font-normal text-slate-500">Enable this for shoes, clothing and any product with selectable sizes. Each size has its own stock.</span></span></label>
+                            {hasSizes && <div className="mt-5">
+                              <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><p className="text-sm font-bold text-slate-800">Size options & stock</p><div className="flex flex-wrap gap-2"><select aria-label="Size preset" defaultValue="" onChange={(event) => { const presets = { shoes: ["38","39","40","41","42","43","44","45"], clothing: ["XS","S","M","L","XL","XXL"], kids: ["2-3Y","4-5Y","6-7Y","8-9Y","10-11Y"], numeric: ["28","30","32","34","36","38","40"] }; if (presets[event.target.value]) setSizeRows(presets[event.target.value].map((label) => ({ label, stock: 0 }))); event.target.value = ""; }} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs"><option value="">Choose a size preset…</option><option value="shoes">Shoes (38–45)</option><option value="clothing">Clothing (XS–XXL)</option><option value="kids">Kids clothing</option><option value="numeric">Numeric clothing</option></select><button type="button" onClick={() => setSizeRows((current) => [...current, { label: "", stock: 0 }])} className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white">+ Add size</button></div></div>
+                              <div className="grid gap-3 sm:grid-cols-2">{sizeRows.map((size, index) => <div key={index} className="flex items-end gap-2 rounded-xl bg-slate-50 p-3"><label className="min-w-0 flex-1 text-xs font-bold">Size label<input value={size.label} onChange={(event) => setSizeRows((current) => current.map((row, rowIndex) => rowIndex === index ? { ...row, label: event.target.value } : row))} required maxLength={30} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" placeholder="e.g. 42 or XL" /></label><label className="w-24 text-xs font-bold">Quantity<input type="number" min="0" max="99999" step="1" required value={size.stock} onChange={(event) => setSizeRows((current) => current.map((row, rowIndex) => rowIndex === index ? { ...row, stock: event.target.value } : row))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal" /></label><button type="button" aria-label={`Remove size ${size.label || index + 1}`} onClick={() => setSizeRows((current) => current.filter((_, rowIndex) => rowIndex !== index))} className="mb-1 rounded-lg px-2 py-2 font-bold text-red-600 hover:bg-red-50">×</button></div>)}</div>
+                              <p className="mt-3 text-xs text-slate-500">You can edit the labels and stock quantities to match what you actually have. Set a size to 0 when it is sold out.</p>
+                            </div>}
+                          </div>
                           <div className="mt-7 grid gap-5 md:grid-cols-2">
                             <label className="grid gap-2 text-sm font-bold">Product name<input name="name" defaultValue={editingProduct?.name || ""} required maxLength="120" className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="e.g. Handmade leather tote" /></label>
                             <label className="grid gap-2 text-sm font-bold">Category<input name="category" defaultValue={editingProduct?.category || ""} required maxLength="60" className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="e.g. Fashion" /></label>
                             <label className="grid gap-2 text-sm font-bold">Selling price (₦)<input name="price" defaultValue={editingProduct?.price || ""} type="number" min="100" max="1000000000" step="1" required className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="25000" /></label>
                             <label className="grid gap-2 text-sm font-bold">Old price, if discounted (₦)<input name="oldPrice" defaultValue={editingProduct?.oldPrice || ""} type="number" min="100" max="1000000000" step="1" className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="30000" /></label>
-                            <label className="grid gap-2 text-sm font-bold">Units in stock<input name="stock" defaultValue={editingProduct?.stock ?? ""} type="number" min="0" max="99999" step="1" required className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="10" /></label>
+                            {!hasSizes ? <label className="grid gap-2 text-sm font-bold">Units in stock<input name="stock" defaultValue={editingProduct?.hasSizes ? "" : (editingProduct?.stock ?? "")} type="number" min="0" max="99999" step="1" required className="rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-orange-500" placeholder="10" /></label> : <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm"><p className="font-bold text-slate-900">Total stock: {sizeRows.reduce((total, size) => total + Math.max(0, Number(size.stock) || 0), 0)} units</p><p className="mt-1 text-slate-600">Stock is calculated from the quantities entered for each size.</p></div>}
                             <label className="grid gap-2 text-sm font-bold">Product condition
                               <select name="condition" defaultValue={editingProduct?.condition || "brand_new"} className="rounded-xl border border-slate-300 bg-white px-4 py-3 font-normal outline-none focus:border-orange-500">
                                 <option value="brand_new">Brand new</option>
